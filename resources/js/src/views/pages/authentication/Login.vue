@@ -294,8 +294,21 @@ export default {
       this.user.email = this.userEmail
       this.user.password = this.password
       this.$store.dispatch('auth/login', this.user).then(
-            () => {
-              this.$router.push('/dashboard/ecommerce');
+            (data) => {
+              let userData = data.userData
+              this.$router.replace(getHomeRouteForLoggedInUser(userData.role)).then(() => {
+                this.$toast({
+                  component: ToastificationContent,
+                  position: 'top-right',
+                  props: {
+                    title: `Welcome ${userData.fullName || userData.username}`,
+                    icon: 'CoffeeIcon',
+                    variant: 'success',
+                    text: `You have successfully logged in as ${userData.role}. Now you can start to explore!`,
+                  },
+                })
+              })
+
             },
             error => {
               this.loading = false;
@@ -303,6 +316,16 @@ export default {
                 (error.response && error.response.data) ||
                 error.message ||
                 error.toString();
+                this.$toast({
+                  component: ToastificationContent,
+                  position: 'top-right',
+                  props: {
+                    title: `error`,
+                    icon: 'CoffeeIcon',
+                    variant: 'error',
+                    text: `error`,
+                  },
+                })
             }
           );
     },
