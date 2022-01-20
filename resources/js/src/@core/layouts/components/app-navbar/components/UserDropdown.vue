@@ -137,9 +137,17 @@ export default {
   },
   data() {
     return {
-      userData: JSON.parse(localStorage.getItem('userData')),
+      user: JSON.parse(localStorage.getItem('user')),
       avatarText,
+      userData: {
+        fullName: "",
+        role: "",
+        avatar: ""
+      }
     }
+  },
+  mounted() {
+    this.userData = this.user.userData
   },
   methods: {
     logout() {
