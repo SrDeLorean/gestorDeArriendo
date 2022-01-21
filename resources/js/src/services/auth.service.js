@@ -16,11 +16,30 @@ class AuthService {
                     localStorage.setItem('accessToken', JSON.stringify(response.data.accessToken));
                     localStorage.setItem('refreshToken', JSON.stringify(response.data.accessToken));
                 }
-
+                let mensaje = {
+                    title: `Bienvenido ${response.data.userData.fullName || response.data.userData.username}`,
+                    text: `Ha iniciado sesión correctamente como ${response.data.userData.role}. ¡Ya puedes empezar a explorar!`,
+                }
+                response.data.mensaje = mensaje
                 return response.data;
             }).catch((error) => {
-                console.log(error)
-            });
+                let mensaje = {
+                    title: "",
+                    text: ""
+                }
+                console.log(error.message)
+                if (error.message == 'Request failed with status code 500') {
+                    mensaje.title = 'Problemas de conexion'
+                    mensaje.text = 'Error al comunicarse con el servidor, intente más tarde';
+                } else {
+                    if (error.response.data.success == false) {
+                        mensaje.title = error.response.data.message
+                        mensaje.text = error.response.data.data.error
+                    }
+                }
+                return mensaje;
+            })
+
     }
 
     logout() {

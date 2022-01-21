@@ -294,39 +294,37 @@ export default {
       this.user.password = this.password
       this.$store.dispatch('auth/login', this.user).then(
             (data) => {
-              let userData = data.userData
-              this.$ability.update(userData.ability)
-              this.$store.commit('app-ecommerce/UPDATE_CART_ITEMS_COUNT', 2)
-              this.$router.replace(getHomeRouteForLoggedInUser(userData.role)).then(() => {
-                this.$toast({
-                  component: ToastificationContent,
-                  position: 'top-right',
-                  props: {
-                    title: `Welcome ${userData.fullName || userData.username}`,
-                    icon: 'CoffeeIcon',
-                    variant: 'success',
-                    text: `You have successfully logged in as ${userData.role}. Now you can start to explore!`,
-                  },
+              if(data.mensaje!=null){
+                let userData = data.userData
+                this.$ability.update(userData.ability)
+                this.$store.commit('app-ecommerce/UPDATE_CART_ITEMS_COUNT', 2)
+                this.$router.replace(getHomeRouteForLoggedInUser(userData.role)).then(() => {
+                  this.$toast({
+                    component: ToastificationContent,
+                    position: 'top-right',
+                    props: {
+                      title: data.mensaje.title,
+                      icon: 'CoffeeIcon',
+                      variant: 'success',
+                      text: data.mensaje.text,
+                    },
+                  })
                 })
-              })
+              } else{
+                this.loading = false;
+                  this.$toast({
+                    component: ToastificationContent,
+                    position: 'top-right',
+                    props: {
+                      title: data.title,
+                      icon: 'CoffeeIcon',
+                      variant: 'error',
+                      text: data.text,
+                    },
+                  })
+              }
+              
             },
-            error => {
-              this.loading = false;
-              this.message =
-                (error.response && error.response.data) ||
-                error.message ||
-                error.toString();
-                this.$toast({
-                  component: ToastificationContent,
-                  position: 'top-right',
-                  props: {
-                    title: `error`,
-                    icon: 'CoffeeIcon',
-                    variant: 'error',
-                    text: `error`,
-                  },
-                })
-            }
           );
     },
   },

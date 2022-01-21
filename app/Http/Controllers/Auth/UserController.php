@@ -13,13 +13,35 @@ class UserController extends Controller
 {
     public function authenticate(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credenciales = $request->only('email', 'password');
+        $validator = Validator::make($credenciales, [
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'code' => 2,
+                'message' => 'Error en las credenciales',
+                'data' => ['error'=>$validator->errors()]
+            ], 422);
+        }
         try {
-            if (! $accessToken = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => $credentials], 400);
+            if (! $accessToken = JWTAuth::attempt($credenciales)) {
+                return response()->json([
+                    'success' => false,
+                    'code' => 3,
+                    'message' => 'Usuario no encontrado',
+                    'data' => ['error'=>'El usuario con la clave no estan correctos']
+                ], 401);
             }
         } catch (JWTException $e) {
-            return response()->json(['error' => 'could_not_create_token'], 500);
+            return response()->json([
+                'success' => false,
+                'code' => 4,
+                'message' => 'Error interno',
+                'data' => ['error'=>$ex]
+            ], 409);
         }
         $refreshToken = $accessToken;
         $userData = JWTAuth::user();
