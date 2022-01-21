@@ -297,7 +297,6 @@ export default {
               let userData = data.userData
               this.$ability.update(userData.ability)
               this.$store.commit('app-ecommerce/UPDATE_CART_ITEMS_COUNT', 2)
-              console.log(userData.role)
               this.$router.replace(getHomeRouteForLoggedInUser(userData.role)).then(() => {
                 this.$toast({
                   component: ToastificationContent,

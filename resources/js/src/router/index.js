@@ -42,66 +42,21 @@ const router = new VueRouter({
     ],
 })
 
-/** 
-router.beforeEach((to, _, next) => {
-    console.log("to", to)
-    var userData = JSON.parse(localStorage.getItem('userData'))
-    console.log("userData", userData)
-    console.log(canNavigate(to))
-    if (!canNavigate(to)) {
-        // Redirect to login if not logged in
-        if (userData == null) {
-            return next('/login')
-        }
-        // If logged in => not authorized
-        return next('/access-control')
-    }
-    // Redirect if logged in
-    if (to.meta.redirectIfLoggedIn && userData != null) {
-        next(getHomeRouteForLoggedInUser(userData ? userData.role : null))
-    }
-
-    return next()
-})
-*/
-/** 
-router.beforeEach((to, from, next) => {
-    const publicPages = ['/login', '/register', '/home'];
-    const authRequired = !publicPages.includes(to.path);
-    const loggedIn = localStorage.getItem('user');
-
-    // trying to access a restricted page + not logged in
-    // redirect to login page
-    if (authRequired && !loggedIn) {
-        next('/login');
-    } else {
-        next();
-    }
-});
-*/
-
 router.beforeEach((to, _, next) => {
     const isLoggedIn = isUserLoggedIn()
-    console.log(to)
-    console.log("canNavigate(to)", canNavigate(to))
-    console.log("isLoggedIn", isLoggedIn)
     if (!canNavigate(to)) {
         // Redirect to login if not logged in
         if (isLoggedIn == null) {
-            console.log('isLoggedIn')
             return next({ name: 'auth-login' })
         }
         // If logged in => not authorized
         const userData = getUserData()
-        console.log('entro canNavigate', userData.role)
         next(getHomeRouteForLoggedInUser(userData ? userData.role : null))
     }
 
     // Redirect if logged in
     if (to.meta.redirectIfLoggedIn && isLoggedIn) {
         const userData = getUserData()
-        console.log('entro redirectIfLoggedIn', userData.role)
-
         next(getHomeRouteForLoggedInUser(userData ? userData.role : null))
     }
 
