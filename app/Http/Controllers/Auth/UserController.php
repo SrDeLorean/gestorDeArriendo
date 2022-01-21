@@ -70,7 +70,7 @@ class UserController extends Controller
                 0 => $a
             ];
         }
-        return response()->json(compact('accessToken', 'refreshToken', 'userData'));
+        return response()->json(compact('accessToken', 'userData'));
     }
 
     public function getAuthenticatedUser()
@@ -91,14 +91,19 @@ class UserController extends Controller
 
     public function register(Request $request)
         {
-                $validator = Validator::make($request->all(), [
+            $validator = Validator::make($request->all(), [
                 'fullName' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:6',
             ]);
 
             if($validator->fails()){
-                    return response()->json($validator->errors()->toJson(), 400);
+                return response()->json([
+                    'success' => false,
+                    'code' => 2,
+                    'message' => 'Error en las credenciales',
+                    'data' => ['error'=>$validator->errors()]
+                ], 422);
             }
 
             $userData = User::create([
@@ -109,8 +114,33 @@ class UserController extends Controller
             ]);
 
             $accessToken = JWTAuth::fromUser($userData);
+            if($userData->role == "desarrollador"){
+                $a = [
+                    "action" => 'manage',
+                    "subject" => 'all',
+                ];
+                $userData->ability = [
+                    0 => $a
+                ];
+            }else if ($userData->role == "admin"){
+                $a = [
+                    "action" => 'read',
+                    "subject" => 'admin',
+                ];
+                $userData->ability = [
+                    0 => $a
+                ];
+            }else{
+                $a = [
+                    "action" => 'read',
+                    "subject" => 'client',
+                ];
+                $userData->ability = [
+                    0 => $a
+                ];
+            }
 
-            return response()->json(compact('userData','accessToken'),201);
+            return response()->json(compact('accessToken', 'userData'));
         }
 
     public function refreshToken()

@@ -10,12 +10,8 @@ class AuthService {
                 password: user.password
             })
             .then(response => {
-                if (response.data.accessToken) {
-                    localStorage.setItem('user', JSON.stringify(response.data));
-                    localStorage.setItem('userData', JSON.stringify(response.data.userData));
-                    localStorage.setItem('accessToken', JSON.stringify(response.data.accessToken));
-                    localStorage.setItem('refreshToken', JSON.stringify(response.data.accessToken));
-                }
+                localStorage.setItem('userData', JSON.stringify(response.data.userData));
+                localStorage.setItem('accessToken', JSON.stringify(response.data.accessToken));
                 let mensaje = {
                     title: `Bienvenido ${response.data.userData.fullName || response.data.userData.username}`,
                     text: `Ha iniciado sesión correctamente como ${response.data.userData.role}. ¡Ya puedes empezar a explorar!`,
@@ -47,11 +43,20 @@ class AuthService {
     }
 
     register(user) {
-        return axios.post(API_URL + 'register', {
-            username: user.username,
-            email: user.email,
-            password: user.password
-        });
+        return axios
+            .post(API_URL + 'register', {
+                fullName: user.fullName,
+                email: user.email,
+                password: user.password
+            })
+            .then(response => {
+                localStorage.setItem('userData', JSON.stringify(response.data.userData));
+                localStorage.setItem('accessToken', JSON.stringify(response.data.accessToken));
+                return response
+            }).catch((error) => {
+                console.log(error.message)
+                return error;
+            })
     }
 }
 
