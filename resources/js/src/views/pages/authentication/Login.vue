@@ -231,7 +231,6 @@ import {
   BAlert,
   VBTooltip,
 } from 'bootstrap-vue'
-import useJwt from '@/auth/jwt/useJwt'
 import { required, email } from '@validations'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
 import store from '@/store/index'
@@ -296,6 +295,13 @@ export default {
       this.$store.dispatch('auth/login', this.user).then(
             (data) => {
               let userData = data.userData
+              let ability = {
+                "action": userData.ability,
+                "subject": userData.ability.subject
+              }
+              this.$ability.update(ability)
+              this.$store.commit('app-ecommerce/UPDATE_CART_ITEMS_COUNT', 2)
+              console.log(userData.role)
               this.$router.replace(getHomeRouteForLoggedInUser(userData.role)).then(() => {
                 this.$toast({
                   component: ToastificationContent,
@@ -308,7 +314,6 @@ export default {
                   },
                 })
               })
-
             },
             error => {
               this.loading = false;

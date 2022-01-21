@@ -1,14 +1,23 @@
 export default [{
-    header: 'Others',
+    header: 'Admin',
     icon: 'MoreHorizontalIcon',
     children: [{
-            title: 'Access Control',
-            route: 'access-control',
+            title: 'Access Control-admin',
+            route: 'access-control-admin',
             icon: 'ShieldIcon',
             // acl: {
+            resource: 'admin',
             action: 'read',
-            resource: 'ACL',
             // },
+        },
+        {
+            title: 'eCommerce-admin',
+            route: 'dashboard-admin-ecommerce',
+            icon: 'ShoppingCartIcon',
+
+            resource: 'admin',
+            action: 'read',
+
         },
         {
             title: 'Menu Levels',

@@ -1,14 +1,23 @@
 export default [{
-        header: 'Others',
+        header: 'Client',
     },
     {
-        title: 'Access Control',
-        route: 'access-control',
+        title: 'Access Control-client',
+        route: 'access-control-client',
         icon: 'ShieldIcon',
         // acl: {
         action: 'read',
-        resource: 'ACL',
+        resource: 'client',
         // },
+    },
+    {
+        title: 'eCommerce-client',
+        route: 'dashboard-client-ecommerce',
+        icon: 'ShoppingCartIcon',
+
+        resource: 'client',
+        action: 'read',
+
     },
     {
         title: 'Menu Levels',

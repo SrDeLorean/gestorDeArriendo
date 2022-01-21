@@ -23,6 +23,31 @@ class UserController extends Controller
         }
         $refreshToken = $accessToken;
         $userData = JWTAuth::user();
+        if($userData->role == "desarrollador"){
+            $a = [
+                "action" => 'manage',
+                "subject" => 'all',
+            ];
+            $userData->ability = [
+                0 => $a
+            ];
+        }else if ($userData->role == "admin"){
+            $a = [
+                "action" => 'read',
+                "subject" => 'admin',
+            ];
+            $userData->ability = [
+                0 => $a
+            ];
+        }else{
+            $a = [
+                "action" => 'read',
+                "subject" => 'client',
+            ];
+            $userData->ability = [
+                0 => $a
+            ];
+        }
         return response()->json(compact('accessToken', 'refreshToken', 'userData'));
     }
 
@@ -45,7 +70,7 @@ class UserController extends Controller
     public function register(Request $request)
         {
                 $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
+                'fullName' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:6',
             ]);
@@ -55,12 +80,13 @@ class UserController extends Controller
             }
 
             $userData = User::create([
-                'name' => $request->get('name'),
+                'fullName' => $request->get('fullName'),
                 'email' => $request->get('email'),
                 'password' => Hash::make($request->get('password')),
+                'role' => 'client'
             ]);
 
-            $accessToken = JWTAuth::fromUser($user);
+            $accessToken = JWTAuth::fromUser($userData);
 
             return response()->json(compact('userData','accessToken'),201);
         }
