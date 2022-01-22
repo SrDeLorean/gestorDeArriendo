@@ -16,12 +16,60 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(){
+    public function index()
+{
         try{
             $usuarios = User::all();
-            return response()->json(
-                $usuarios
-            , 200);
+            return response()->json([
+                'total' => $usuarios->count(),
+                'users'=>$usuarios
+            ], 200);
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        try{
+            $userData = User::find($id);
+            return response()->json([
+                'userData'=>$userData
+            ], 200);
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        try{
+            $userData = User::find($id);
+            return response()->json([
+                'userData'=>$userData
+            ], 200);
         } catch(\Illuminate\Database\QueryException $ex){
             return response()->json([
                 'success' => false,
@@ -40,8 +88,27 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $entradas = $request->all();
+        try{
+            if($entradas['sortDesc']){
+                $usuarios = User::OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['page']);
+
+            }else{
+                $usuarios = User::OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['page']);
+            }
+            return response()->json([ $usuarios
+            ], 200);
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$entradas]
+            ], 409);
+        }
     }
+
+    
 
     /**
      * Update the specified resource in storage.

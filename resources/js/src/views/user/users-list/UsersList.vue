@@ -9,15 +9,7 @@
       @refetch-data="refetchData"
     />
 
-    <!-- Filters -->
-    <users-list-filters
-      :role-filter.sync="roleFilter"
-      :plan-filter.sync="planFilter"
-      :status-filter.sync="statusFilter"
-      :role-options="roleOptions"
-      :plan-options="planOptions"
-      :status-options="statusOptions"
-    />
+
 
     <!-- Table Container Card -->
     <b-card
@@ -355,63 +347,6 @@ export default {
 
     }
   },
-  beforeMount(){
-    console.log(this.fetchUsers)
-    this.obtenerUsuarios()
-  },
-  methods:{
-    obtenerUsuarios(){
-      this.listaUsuarios= [];
-      var url = 'http://127.0.0.1:8000/api/user';
-      axios.get(url)
-      .then((result)=>{
-          //console.log(result.data);
-          if (result.data.success == true) {
-            console.log(result.data.data.usuarios)
-              for (let index = 0; index < result.data.data.usuarios.length; index++) {
-              const element = result.data.data.usuarios[index];
-              //console.log(element)
-              let usuario = {
-                  id: element.id,
-                  fullName: element.fullName,
-                  email: element.email,
-                  role: element.role
-              };
-              this.listaUsuariosAux[index]=usuario;
-              }
-              this.cargando = false;
-              this.listaUsuarios = this.listaUsuariosAux;
-              console.log(this.listaUsuarios);
-          }
-      })
-      .catch((error)=>{
-          if (error.message == 'Network Error') {
-              //console.log(error);
-              this.alertError = true;
-              this.cargando = false;
-              //console.log(err)
-              this.textoError = 'Error al cargar los datos, inténtelo más tarde'
-          } else {
-              if (error.response.data.success == false) {
-                  switch (error.response.data.code) {
-                  case 301:
-                      //console.log(error.response.data.code +' '+ error.response.data.message);
-                      //console.log(error.response.data);
-                      this.alertError = true;
-                      this.cargando = false;
-                      this.textoError = error.response.data.message;
-                      break;
-                  default:
-                      this.alertError = true;
-                      this.cargando = false;
-                      this.textoError = error.response.data.message;
-                      break;
-                  }
-              }
-          } 
-      });
-    },
-  }
 }
 </script>
 

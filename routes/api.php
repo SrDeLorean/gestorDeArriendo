@@ -24,8 +24,6 @@ Route::group(['middleware' => ['jwt.verify']], function() {
     /*AÑADE AQUI LAS RUTAS QUE QUIERAS PROTEGER CON JWT*/
 });
 
-Route::resource('user', UserController::class)->only([
-    'index', 'store', 'update', 'destroy'
-]);
+Route::resource('user', UserController::class);
 
 

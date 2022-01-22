@@ -82,6 +82,7 @@ import userStoreModule from '../userStoreModule'
 import UserEditTabAccount from './UserEditTabAccount.vue'
 import UserEditTabInformation from './UserEditTabInformation.vue'
 import UserEditTabSocial from './UserEditTabSocial.vue'
+import axios from 'axios'
 
 export default {
   components: {
@@ -108,9 +109,11 @@ export default {
       if (store.hasModule(USER_APP_STORE_MODULE_NAME)) store.unregisterModule(USER_APP_STORE_MODULE_NAME)
     })
 
-    store.dispatch('app-user/fetchUser', { id: router.currentRoute.params.id })
-      .then(response => { userData.value = response.data })
-      .catch(error => {
+    var url = 'http://127.0.0.1:8000/api/user/'+router.currentRoute.params.id+'/edit';
+    axios.get(url)
+      .then(response => { 
+        userData.value = response.data.userData 
+      }).catch(error => {
         if (error.response.status === 404) {
           userData.value = undefined
         }

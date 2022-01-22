@@ -32,29 +32,6 @@
         >
           <user-view-user-info-card :user-data="userData" />
         </b-col>
-        <b-col
-          cols="12"
-          md="5"
-          xl="3"
-          lg="4"
-        >
-          <user-view-user-plan-card />
-        </b-col>
-      </b-row>
-
-      <b-row>
-        <b-col
-          cols="12"
-          lg="6"
-        >
-          <user-view-user-timeline-card />
-        </b-col>
-        <b-col
-          cols="12"
-          lg="6"
-        >
-          <user-view-user-permissions-card />
-        </b-col>
       </b-row>
 
       <invoice-list />
@@ -66,6 +43,7 @@
 <script>
 import store from '@/store'
 import router from '@/router'
+import axios from 'axios'
 import { ref, onUnmounted } from '@vue/composition-api'
 import {
   BRow, BCol, BAlert, BLink,
@@ -105,13 +83,15 @@ export default {
       if (store.hasModule(USER_APP_STORE_MODULE_NAME)) store.unregisterModule(USER_APP_STORE_MODULE_NAME)
     })
 
-    store.dispatch('app-user/fetchUser', { id: router.currentRoute.params.id })
-      .then(response => { userData.value = response.data })
-      .catch(error => {
-        if (error.response.status === 404) {
-          userData.value = undefined
-        }
-      })
+    var url = 'http://127.0.0.1:8000/api/user/';
+    axios.get(url+router.currentRoute.params.id)
+      .then(response => { 
+        userData.value = response.data.userData 
+      }).catch(error => {
+      if (error.response.status === 404) {
+        userData.value = undefined
+      }
+    })
 
     return {
       userData,
