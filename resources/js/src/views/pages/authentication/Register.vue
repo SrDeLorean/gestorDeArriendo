@@ -207,6 +207,7 @@
 /* eslint-disable global-require */
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
 import VuexyLogo from '@core/layouts/components/Logo.vue'
+import User from '@/models/user';
 import {
   BRow,
   BCol,
@@ -225,7 +226,8 @@ import {
 import { required, email } from '@validations'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
 import store from '@/store/index'
-import useJwt from '@/auth/jwt/useJwt'
+import { getHomeRouteForLoggedInUser } from '@/auth/utils'
+
 
 export default {
   components: {
@@ -258,6 +260,7 @@ export default {
       // validation
       required,
       email,
+      user: new User('', '', ''),
     }
   },
   computed: {
@@ -277,24 +280,18 @@ export default {
     register() {
       this.$refs.registerForm.validate().then(success => {
         if (success) {
-          useJwt
-            .register({
-              username: this.username,
-              email: this.userEmail,
-              password: this.password,
-            })
-            .then(response => {
-              useJwt.setToken(response.data.accessToken)
-              useJwt.setRefreshToken(response.data.refreshToken)
-              localStorage.setItem('userData', JSON.stringify(response.data.userData))
-              this.$ability.update(response.data.userData.ability)
-              this.$router.push('/')
-            })
-            .catch(error => {
-              this.$refs.registerForm.setErrors(error.response.data.error)
-            })
+          this.user.email = this.userEmail
+          this.user.password = this.password
+          this.user.fullName = this.username
+          this.$store.dispatch('auth/register', this.user).then(
+            (data) => {
+              let userData = data.userData
+              this.$ability.update(userData.ability)
+              this.$router.replace(getHomeRouteForLoggedInUser(userData.role))
+            },
+          );
         }
-      })
+      });
     },
   },
 }

@@ -13,12 +13,6 @@
         </b-card-sub-title>
       </div>
 
-      <i
-        class="code-toggler feather icon-code cursor-pointer"
-        :aria-expanded="!code_visible ? 'true' : 'false'"
-        :aria-controls="parentID"
-        @click="code_visible = !code_visible"
-      />
     </div>
 
     <template v-if="$attrs['no-body'] !== undefined">

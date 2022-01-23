@@ -11,19 +11,188 @@ namespace App\Http\Controllers\Auth;
 
 class UserController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+{
+        try{
+            $usuarios = User::all();
+            return response()->json([
+                'total' => $usuarios->count(),
+                'users'=>$usuarios
+            ], 200);
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        try{
+            $userData = User::find($id);
+            return response()->json([
+                'userData'=>$userData
+            ], 200);
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        try{
+            $userData = User::find($id);
+            return response()->json([
+                'userData'=>$userData
+            ], 200);
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $entradas = $request->all();
+        try{
+            if($entradas['sortDesc']){
+                $usuarios = User::OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['page']);
+
+            }else{
+                $usuarios = User::OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['page']);
+            }
+            return response()->json([ $usuarios
+            ], 200);
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$entradas]
+            ], 409);
+        }
+    }
+
+    
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+
     public function authenticate(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credenciales = $request->only('email', 'password');
+        $validator = Validator::make($credenciales, [
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'code' => 2,
+                'message' => 'Error en las credenciales',
+                'data' => ['error'=>$validator->errors()]
+            ], 422);
+        }
         try {
-            if (! $accessToken = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => $credentials], 400);
+            if (! $accessToken = JWTAuth::attempt($credenciales)) {
+                return response()->json([
+                    'success' => false,
+                    'code' => 3,
+                    'message' => 'Usuario no encontrado',
+                    'data' => ['error'=>'El usuario con la clave no estan correctos']
+                ], 401);
             }
         } catch (JWTException $e) {
-            return response()->json(['error' => 'could_not_create_token'], 500);
+            return response()->json([
+                'success' => false,
+                'code' => 4,
+                'message' => 'Error interno',
+                'data' => ['error'=>$ex]
+            ], 409);
         }
         $refreshToken = $accessToken;
         $userData = JWTAuth::user();
-        return response()->json(compact('accessToken', 'refreshToken', 'userData'));
+        if($userData->role == "desarrollador"){
+            $a = [
+                "action" => 'manage',
+                "subject" => 'all',
+            ];
+            $userData->ability = [
+                0 => $a
+            ];
+        }else if ($userData->role == "admin"){
+            $a = [
+                "action" => 'read',
+                "subject" => 'admin',
+            ];
+            $userData->ability = [
+                0 => $a
+            ];
+        }else{
+            $a = [
+                "action" => 'read',
+                "subject" => 'client',
+            ];
+            $userData->ability = [
+                0 => $a
+            ];
+        }
+        return response()->json(compact('accessToken', 'userData'));
     }
 
     public function getAuthenticatedUser()
@@ -44,25 +213,56 @@ class UserController extends Controller
 
     public function register(Request $request)
         {
-                $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
+            $validator = Validator::make($request->all(), [
+                'fullName' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:6',
             ]);
 
             if($validator->fails()){
-                    return response()->json($validator->errors()->toJson(), 400);
+                return response()->json([
+                    'success' => false,
+                    'code' => 2,
+                    'message' => 'Error en las credenciales',
+                    'data' => ['error'=>$validator->errors()]
+                ], 422);
             }
 
             $userData = User::create([
-                'name' => $request->get('name'),
+                'fullName' => $request->get('fullName'),
                 'email' => $request->get('email'),
                 'password' => Hash::make($request->get('password')),
+                'role' => 'client'
             ]);
 
-            $accessToken = JWTAuth::fromUser($user);
+            $accessToken = JWTAuth::fromUser($userData);
+            if($userData->role == "desarrollador"){
+                $a = [
+                    "action" => 'manage',
+                    "subject" => 'all',
+                ];
+                $userData->ability = [
+                    0 => $a
+                ];
+            }else if ($userData->role == "admin"){
+                $a = [
+                    "action" => 'read',
+                    "subject" => 'admin',
+                ];
+                $userData->ability = [
+                    0 => $a
+                ];
+            }else{
+                $a = [
+                    "action" => 'read',
+                    "subject" => 'client',
+                ];
+                $userData->ability = [
+                    0 => $a
+                ];
+            }
 
-            return response()->json(compact('userData','accessToken'),201);
+            return response()->json(compact('accessToken', 'userData'));
         }
 
     public function refreshToken()

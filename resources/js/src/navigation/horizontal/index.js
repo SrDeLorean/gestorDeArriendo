@@ -31,5 +31,8 @@ import uiElements from './ui-elements'
 import formAndTable from './forms-and-table'
 import others from './others'
 
+import admin from './admin'
+import client from './client'
+
 // Array of sections
-export default [...dashboard, ...apps, ...uiElements, ...formAndTable, ...pages, ...chartsAndMaps, ...others]
+export default [...dashboard, ...apps, ...uiElements, ...formAndTable, ...pages, ...chartsAndMaps, ...others, ...client, ...admin]
