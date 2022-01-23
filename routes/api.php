@@ -2,7 +2,13 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Auth\UserController;
+
+use App\Http\Controllers\CanchaController;
+use App\Http\Controllers\HorarioController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\ComprobanteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,5 +31,10 @@ Route::group(['middleware' => ['jwt.verify']], function() {
 });
 
 Route::resource('user', UserController::class);
+Route::resource('cancha', CanchaController::class);
+Route::resource('horario', HorarioController::class);
+Route::resource('reserva', ReservaController::class);
+Route::post('reservaPorDia', [ReservaController::class, 'reservaPorDia']);
+Route::resource('comprobante', ComprobanteController::class);
 
 

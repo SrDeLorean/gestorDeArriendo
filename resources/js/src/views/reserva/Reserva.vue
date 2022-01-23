@@ -45,8 +45,8 @@
           <b-th class="text-right">
             {{horario.nombre}}
           </b-th>
-            <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.nombre)===true" @click="actionTd(cancha.id, horario.nombre)" variant="success">ocupado</b-td>
-            <b-td v-else @click="horarioNoDisponible(cancha.id, horario.nombre)" variant="danger">libre</b-td>
+            <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.nombre)===true" @click="actionTd(cancha.id, horario.nombre)" variant="success">Libre</b-td>
+            <b-td v-else @click="horarioNoDisponible(cancha.id, horario.nombre)" variant="danger">Ocupado</b-td>
         </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -59,7 +59,6 @@
 
 <script>
 import { BFormDatepicker } from 'bootstrap-vue'
-import { ref, onUnmounted } from '@vue/composition-api'
 import BCardCode from '@core/components/b-card-code/BCardCode.vue'
 import {
   BTableSimple, BThead, BTr, BTh, BTd, BTbody, BTfoot,
