@@ -19,7 +19,6 @@
       :min="min"
       :max="max"
     />
-    <p>dia: '{{ dia }}'</p>
   </div>
 
     <label for="table-simple">2. Seleccione el horario que desea jugar: </label>
@@ -49,15 +48,38 @@
             {{horario.descripcion}}
           </b-th>
             <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.id)===true" @click="actionTd(cancha.descripcion, horario.descripcion)" variant="success">Libre</b-td>
-            <b-td v-else @click="horarioNoDisponible(cancha.id, horario.descripcion)" variant="danger">Ocupado</b-td>
+            <b-td v-else-if="soyYo(cancha.id, horario.id)" @click="horarioNoDisponible(cancha.id, horario.descripcion)" v-b-modal.modal-primary variant="primary">Ocupado</b-td>
+            <b-td v-else @click="horarioNoDisponible(cancha.id, horario.descripcion)" v-b-modal.modal-danger variant="danger">Ocupado</b-td>
         </b-tr>
       </b-tbody>
     </b-table-simple>
 
-    <template #code>
-      {{ codeSimple }}
-    </template>
+    <b-modal
+      id="modal-danger"
+      ok-only
+      ok-variant="danger"
+      ok-title="Cerrar"
+      modal-class="modal-danger"
+      centered
+      title="Reserva ocupada"
+    >
+        Estimado cliente, esta cancha y hora se encuentran ocupadas por otro cliente, por favor intente reservar otra cancha o en otro horario.
+    
+    </b-modal>
+
+    <b-modal
+      id="modal-primary"
+      ok-only
+      ok-variant="primary"
+      ok-title="Cerrar"
+      modal-class="modal-primary"
+      centered
+      title="Reserva ocupada"
+    >
+        Estimado cliente, esta cancha y hora se encuentran reservadas por usted, si desea cancelar la reserva por favor diríjase a la vista de sus reservas.
+    </b-modal>
   </b-card-code>
+  
 </template>
 
 <script>
@@ -69,6 +91,9 @@ import { codeSimple } from './code'
 
 import UserListAddNew from './UserListAddNew.vue'
 import axios from 'axios'
+
+import { BButton, BModal, VBModal } from 'bootstrap-vue'
+import Ripple from 'vue-ripple-directive'
 
 const isAddNewUserSidebarActive = false
 
@@ -85,10 +110,17 @@ export default {
     BTbody,
     BTfoot,
     BFormDatepicker,
+    BButton,
+    BModal,
+  },
+  directives: {
+    'b-modal': VBModal,
+    Ripple,
   },
   data() {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
     // 15th two months prior
     const minDate = new Date(today)
     minDate.setMonth(minDate.getMonth())
@@ -102,15 +134,15 @@ export default {
       max: maxDate,
       isAddNewUserSidebarActive,
       codeSimple,
-      dia: "2022-02-16",
+      dia: today.getFullYear() +'-'+today.getMonth()+1+'-'+today.getDate(),
       recerva: {
         cancha: "",
         horario: ""
       },
       canchas: [],
       horarios: [],
-      listaRecervas: []
-      
+      listaRecervas: [],
+      userData: JSON.parse(localStorage.getItem('userData')),
     }
   },
   created() {
@@ -139,6 +171,20 @@ export default {
       }
       return true
      
+    },
+    soyYo($cancha, $horario){
+      for (let element of this.listaRecervas) {
+        if(element.idHorario == $horario){
+          if(element.idCancha == $cancha){
+            if(element.idUsuario == this.userData.id){
+              return true
+            }else{
+              return false
+            }
+          }
+        }
+      }
+      return true
     },
     horarioNoDisponible($cancha, $horario) {
       console.log("el horario de la cancha:", $cancha, " horario:", $horario, " se encuentra ocupado")
