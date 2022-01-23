@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\horario;
+use App\Models\Horario;
 use App\Http\Requests\StorehorarioRequest;
 use App\Http\Requests\UpdatehorarioRequest;
 

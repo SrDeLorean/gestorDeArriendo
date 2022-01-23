@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\reserva;
+use App\Models\Reserva;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorereservaRequest;
 use App\Http\Requests\UpdatereservaRequest;

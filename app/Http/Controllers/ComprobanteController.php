@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\comprobante;
+use App\Models\Comprobante;
 use App\Http\Requests\StorecomprobanteRequest;
 use App\Http\Requests\UpdatecomprobanteRequest;
 

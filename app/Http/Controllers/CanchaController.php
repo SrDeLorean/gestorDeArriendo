@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\cancha;
+use App\Models\Cancha;
 use App\Http\Requests\StorecanchaRequest;
 use App\Http\Requests\UpdatecanchaRequest;
 
