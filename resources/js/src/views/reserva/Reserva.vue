@@ -16,6 +16,8 @@
       id="example-datepicker"
       v-model="dia"
       class="mb-1"
+      :min="min"
+      :max="max"
     />
     <p>dia: '{{ dia }}'</p>
   </div>
@@ -46,7 +48,7 @@
           <b-th class="text-right">
             {{horario.descripcion}}
           </b-th>
-            <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.descripcion)===true" @click="actionTd(cancha.id, horario.descripcion)" variant="success">Libre</b-td>
+            <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.id)===true" @click="actionTd(cancha.descripcion, horario.descripcion)" variant="success">Libre</b-td>
             <b-td v-else @click="horarioNoDisponible(cancha.id, horario.descripcion)" variant="danger">Ocupado</b-td>
         </b-tr>
       </b-tbody>
@@ -59,17 +61,16 @@
 </template>
 
 <script>
-import { BFormDatepicker } from 'bootstrap-vue'
 import BCardCode from '@core/components/b-card-code/BCardCode.vue'
 import {
-  BTableSimple, BThead, BTr, BTh, BTd, BTbody, BTfoot,
+  BFormDatepicker, BTableSimple, BThead, BTr, BTh, BTd, BTbody, BTfoot,
 } from 'bootstrap-vue'
 import { codeSimple } from './code'
 
 import UserListAddNew from './UserListAddNew.vue'
 import axios from 'axios'
 
-    const isAddNewUserSidebarActive = false
+const isAddNewUserSidebarActive = false
 
 
 export default {
@@ -86,16 +87,29 @@ export default {
     BFormDatepicker,
   },
   data() {
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    // 15th two months prior
+    const minDate = new Date(today)
+    minDate.setMonth(minDate.getMonth())
+    minDate.setDate(minDate.getDate())
+    // 15th in two months
+    const maxDate = new Date(today)
+    maxDate.setMonth(maxDate.getMonth() + 2)
+    maxDate.setDate(minDate.getDate())
     return {
+      min: minDate,
+      max: maxDate,
       isAddNewUserSidebarActive,
       codeSimple,
-      dia: '',
+      dia: "2022-02-16",
       recerva: {
         cancha: "",
         horario: ""
       },
       canchas: [],
-      horarios: []
+      horarios: [],
+      listaRecervas: []
       
     }
   },
@@ -106,22 +120,25 @@ export default {
   },
   watch: {
     dia() {
-      this.recargarReservas();
+      this.obtenerReservas();
     }
   },
   methods: {
     actionTd($cancha, $horario){
       this.recerva.cancha = $cancha
       this.recerva.horario = $horario
-      console.log(this.recerva)
       this.isAddNewUserSidebarActive=true
     },
     ocupado($cancha, $horario) {
-      console.log("ocupado")
-      if($cancha==1 || $horario=="9:00"){
-        return true
+      for (let element of this.listaRecervas) {
+        if(element.idHorario == $horario){
+          if(element.idCancha == $cancha){
+            return false
+          }
+        }
       }
-      return false
+      return true
+     
     },
     horarioNoDisponible($cancha, $horario) {
       console.log("el horario de la cancha:", $cancha, " horario:", $horario, " se encuentra ocupado")
@@ -130,7 +147,7 @@ export default {
       var url = 'http://127.0.0.1:8000/api/horario';
         axios.get(url)
           .then(response => { 
-            console.log(response.data)
+            this.horarios = []
             this.horarios = response.data.horarios
           }).catch(error => {
           if (error.response.status === 404) {
@@ -142,7 +159,7 @@ export default {
       var url = 'http://127.0.0.1:8000/api/cancha';
         axios.get(url)
           .then(response => { 
-            console.log(response.data)
+            this.canchas = []
             this.canchas = response.data.canchas
           }).catch(error => {
           if (error.response.status === 404) {
@@ -156,16 +173,14 @@ export default {
           "dia": this.dia
         })
           .then(response => { 
-            console.log(response.data)
+            this.listaRecervas = []
+            this.listaRecervas = response.data.reservas
           }).catch(error => {
           if (error.response.status === 404) {
             console.log(error)
           }
         })
-    },
-    recargarReservas(){
-      console.log("holaaaaaaaa")
-    },
+    }
   },
 }
 </script>
