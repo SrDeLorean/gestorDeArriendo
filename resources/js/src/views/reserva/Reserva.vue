@@ -95,7 +95,7 @@ export default {
     // 15th in two months
     const maxDate = new Date(today)
     maxDate.setMonth(maxDate.getMonth() + 2)
-    maxDate.setDate(15)
+    maxDate.setDate(minDate.getDate())
     return {
       value: '',
       min: minDate,
