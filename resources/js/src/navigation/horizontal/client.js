@@ -19,5 +19,14 @@ export default [{
             action: 'read',
 
         },
+        {
+            title: 'reserva',
+            route: 'client-reserva',
+            icon: 'ShoppingCartIcon',
+
+            resource: 'client',
+            action: 'read',
+
+        },
     ],
 }, ]

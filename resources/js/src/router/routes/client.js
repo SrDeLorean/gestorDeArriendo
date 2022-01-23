@@ -18,4 +18,14 @@ export default [{
         component: () =>
             import ('@/views/dashboard/ecommerce/Ecommerce.vue'),
     },
+    {
+        path: '/reserva',
+        name: 'client-reserva',
+        meta: {
+            resource: 'client',
+            action: 'read',
+        },
+        component: () =>
+            import ('@/views/reserva/Reserva.vue'),
+    },
 ]
