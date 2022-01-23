@@ -213,6 +213,7 @@
 /* eslint-disable global-require */
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
 import VuexyLogo from '@core/layouts/components/Logo.vue'
+import User from '@/models/user';
 import {
   BRow,
   BCol,
@@ -230,7 +231,6 @@ import {
   BAlert,
   VBTooltip,
 } from 'bootstrap-vue'
-import useJwt from '@/auth/jwt/useJwt'
 import { required, email } from '@validations'
 import { togglePasswordVisibility } from '@core/mixins/ui/forms'
 import store from '@/store/index'
@@ -272,6 +272,7 @@ export default {
       // validation rules
       required,
       email,
+      user: new User('', '')
     }
   },
   computed: {
@@ -289,43 +290,42 @@ export default {
   },
   methods: {
     login() {
-      this.$refs.loginForm.validate().then(success => {
-        if (success) {
-          useJwt
-            .login({
-              email: this.userEmail,
-              password: this.password,
-            })
-            .then(response => {
-              const { userData } = response.data
-              useJwt.setToken(response.data.accessToken)
-              useJwt.setRefreshToken(response.data.refreshToken)
-              localStorage.setItem('userData', JSON.stringify(userData))
-              this.$ability.update(userData.ability)
-
-              // ? This is just for demo purpose as well.
-              // ? Because we are showing eCommerce app's cart items count in navbar
-              this.$store.commit('app-ecommerce/UPDATE_CART_ITEMS_COUNT', userData.extras.eCommerceCartItemsCount)
-
-              // ? This is just for demo purpose. Don't think CASL is role based in this case, we used role in if condition just for ease
-              this.$router.replace(getHomeRouteForLoggedInUser(userData.role)).then(() => {
-                this.$toast({
-                  component: ToastificationContent,
-                  position: 'top-right',
-                  props: {
-                    title: `Welcome ${userData.fullName || userData.username}`,
-                    icon: 'CoffeeIcon',
-                    variant: 'success',
-                    text: `You have successfully logged in as ${userData.role}. Now you can start to explore!`,
-                  },
+      this.user.email = this.userEmail
+      this.user.password = this.password
+      this.$store.dispatch('auth/login', this.user).then(
+            (data) => {
+              if(data.mensaje!=null){
+                let userData = data.userData
+                this.$ability.update(userData.ability)
+                this.$store.commit('app-ecommerce/UPDATE_CART_ITEMS_COUNT', 2)
+                this.$router.replace(getHomeRouteForLoggedInUser(userData.role)).then(() => {
+                  this.$toast({
+                    component: ToastificationContent,
+                    position: 'top-right',
+                    props: {
+                      title: data.mensaje.title,
+                      icon: 'CoffeeIcon',
+                      variant: 'success',
+                      text: data.mensaje.text,
+                    },
+                  })
                 })
-              })
-            })
-            .catch(error => {
-              this.$refs.loginForm.setErrors(error.response.data.error)
-            })
-        }
-      })
+              } else{
+                this.loading = false;
+                  this.$toast({
+                    component: ToastificationContent,
+                    position: 'top-right',
+                    props: {
+                      title: data.title,
+                      icon: 'CoffeeIcon',
+                      variant: 'error',
+                      text: data.text,
+                    },
+                  })
+              }
+              
+            },
+          );
     },
   },
 }

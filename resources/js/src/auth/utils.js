@@ -7,7 +7,7 @@ import useJwt from '@/auth/jwt/useJwt'
  */
 // eslint-disable-next-line arrow-body-style
 export const isUserLoggedIn = () => {
-  return localStorage.getItem('userData') && localStorage.getItem(useJwt.jwtConfig.storageTokenKeyName)
+    return localStorage.getItem('userData') && localStorage.getItem('accessToken')
 }
 
 export const getUserData = () => JSON.parse(localStorage.getItem('userData'))
@@ -21,7 +21,8 @@ export const getUserData = () => JSON.parse(localStorage.getItem('userData'))
  * @param {String} userRole Role of user
  */
 export const getHomeRouteForLoggedInUser = userRole => {
-  if (userRole === 'admin') return '/'
-  if (userRole === 'client') return { name: 'access-control' }
-  return { name: 'auth-login' }
+    if (userRole === 'desarrollador') return { name: 'dashboard-ecommerce' }
+    if (userRole === 'admin') return { name: 'dashboard-admin-ecommerce' }
+    if (userRole === 'client') return { name: 'dashboard-client-ecommerce' }
+    return { name: 'auth-login' }
 }

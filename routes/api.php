@@ -16,10 +16,14 @@ use App\Http\Controllers\Auth\UserController;
 */
 
 Route::post('register', [UserController::class, 'register']);
-Route::post('jwt/login', [UserController::class, 'authenticate']);
-Route::post('jwt/refresh-token', [UserController::class, 'refreshToken']);
-Route::post('jwt/logout', [UserController::class, 'logout']);
+Route::post('login', [UserController::class, 'authenticate']);
+Route::post('refresh-token', [UserController::class, 'refreshToken']);
+Route::post('logout', [UserController::class, 'logout']);
 
 Route::group(['middleware' => ['jwt.verify']], function() {
     /*AÑADE AQUI LAS RUTAS QUE QUIERAS PROTEGER CON JWT*/
 });
+
+Route::resource('user', UserController::class);
+
+
