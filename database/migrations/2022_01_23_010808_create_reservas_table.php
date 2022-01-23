@@ -25,6 +25,8 @@ class CreateReservasTable extends Migration
             $table->bigInteger('idComprobante')->unsigned();
             $table->foreign('idComprobante')->references('id')->on('comprobantes');
             $table->timestamps();
+
+            $table->unique(['idCancha','idHorario', 'dia']);
         });
     }
 
