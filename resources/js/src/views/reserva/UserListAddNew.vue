@@ -15,7 +15,7 @@
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center content-sidebar-header px-2 py-1">
         <h5 class="mb-0">
-          Registrar recerva
+          Registrar reserva
         </h5>
 
         <feather-icon
@@ -49,8 +49,8 @@
               autofocus
               trim
               disabled 
-              v-bind:value="recerva.cancha"
-              v-bind:placeholder="'c '+recerva.cancha"
+              v-bind:value="reserva.cancha"
+              v-bind:placeholder="reserva.cancha"
             />
 
           </b-form-group>
@@ -65,8 +65,8 @@
               autofocus
               trim
               disabled 
-              v-bind:value="recerva.horario"
-              v-bind:placeholder="recerva.horario"
+              v-bind:value="reserva.horario"
+              v-bind:placeholder="reserva.horario"
             />
           </b-form-group>
           <b-form-group
@@ -77,6 +77,9 @@
               v-ripple.400="'rgba(255, 159, 67, 0.15)'"
               variant="outline-warning"
               pill
+              :disabled='disponible60'
+              :pressed.sync="boton60"
+              @click="clicBoton(1)"
             >
               60°
             </b-button>
@@ -85,6 +88,9 @@
               v-ripple.400="'rgba(113, 102, 240, 0.15)'"
               variant="outline-primary"
               pill
+              :disabled='disponible90'
+              :pressed.sync="boton90"
+              @click="clicBoton(2)"
             >
               90°
             </b-button>
@@ -92,6 +98,9 @@
               v-ripple.400="'rgba(40, 199, 111, 0.15)'"
               variant="outline-success"
               pill
+              :disabled='disponible120'
+              :pressed.sync="boton120"
+              @click="clicBoton(3)"
             >
               120°
             </b-button>
@@ -104,6 +113,7 @@
               variant="primary"
               class="mr-2"
               type="submit"
+              :disabled='accion'
             >
               Registrar
             </b-button>
@@ -132,6 +142,7 @@ import Ripple from 'vue-ripple-directive'
 import vSelect from 'vue-select'
 import countries from '@/@fake-db/data/other/countries'
 import store from '@/store'
+import axios from 'axios'
 
 export default {
   components: {
@@ -144,9 +155,82 @@ export default {
     BButton,
     vSelect,
 
+
     // Form Validation
     ValidationProvider,
     ValidationObserver,
+  },
+  methods: {
+    obtenerReservaDisponible(){
+      console.log(this.reserva.idCancha, this.reserva.idHorario, this.reserva.dia);
+      var url = 'http://127.0.0.1:8000/api/reservaDisponible';
+        axios.post(url, {
+          "idCancha": this.reserva.idCancha,
+          "idHorario": this.reserva.idHorario,
+          "dia": this.reserva.dia
+        })
+          .then(response => { 
+            if(response.data.reservas.r60.length==1){
+              this.disponible60 = true
+              this.disponible90 = true
+              this.disponible120 = true
+              this.accion = true
+              return
+            }else{
+              this.disponible60 = false
+              this.accion = false
+            }
+            if(response.data.reservas.r90.length==1){
+              this.disponible90 = true
+              this.disponible120 = true
+              return
+            }else{
+              this.disponible90 = false
+            }
+            if(response.data.reservas.r120.length==1){
+              this.disponible120 = true
+            }else{
+              this.disponible120 = false
+            }
+          }).catch(error => {
+            console.log(error)
+          
+        })
+    },
+    clicBoton($id){
+      if($id==1){
+        this.boton60= true,
+        this.boton90= false,
+        this.boton120= false, 
+        this.tiempo=1
+      }else if($id==2){
+        this.boton60= false,
+        this.boton90= true,
+        this.boton120= false, 
+        this.tiempo=2
+      }else{
+        this.boton60= false,
+        this.boton90= false,
+        this.boton120= true,
+        this.tiempo=3
+      }
+    },
+    onSubmit(){
+      var url = 'http://127.0.0.1:8000/api/reserva';
+        axios.post(url, {
+          "idCancha": this.reserva.idCancha,
+          "idHorario": this.reserva.idHorario,
+          "dia": this.reserva.dia,
+          "tiempo": this.tiempo,
+          "idUsuario": this.userData.id
+        })
+          .then(response => { 
+            console.log(response)
+          }).catch(error => {
+            console.log(error)
+          
+        })
+    }
   },
   directives: {
     Ripple,
@@ -160,11 +244,18 @@ export default {
       type: Boolean,
       required: true,
     },
-    recerva: {
+    reserva: {
       type: Object,
       required: true,
     },
   },
+  watch:{
+    'isAddNewUserSidebarActive'(){
+      if(this.isAddNewUserSidebarActive){
+        this.obtenerReservaDisponible();
+      }
+    }
+        },
   data() {
     return {
       required,
@@ -172,6 +263,16 @@ export default {
       email,
       countries,
       dataRecerva: [],
+      disponible60: false,
+      disponible90: false,
+      disponible120: false,
+      accion: false,
+      tiempo: 1,
+      boton60: false,
+      boton90: false,
+      boton120: false,
+      tiempo: "",
+      userData: JSON.parse(localStorage.getItem('userData'))
     }
   },
   setup(props, { emit }) {
@@ -191,18 +292,10 @@ export default {
       userData.value = JSON.parse(JSON.stringify(blankUserData))
     }
 
-    const onSubmit = () => {
-      store.dispatch('app-user/addUser', userData.value).then(() => {
-        emit('refetch-data')
-        emit('update:is-add-new-user-sidebar-active', false)
-      })
-    }
-
     const { refFormObserver, getValidationState, resetForm } = formValidation(resetuserData)
 
     return {
       userData,
-      onSubmit,
 
       refFormObserver,
       getValidationState,

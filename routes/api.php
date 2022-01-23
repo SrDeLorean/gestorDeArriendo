@@ -35,6 +35,7 @@ Route::resource('cancha', CanchaController::class);
 Route::resource('horario', HorarioController::class);
 Route::resource('reserva', ReservaController::class);
 Route::post('reservaPorDia', [ReservaController::class, 'reservaPorDia']);
+Route::post('reservaDisponible', [ReservaController::class, 'reservaDisponible']);
 Route::resource('comprobante', ComprobanteController::class);
 
 

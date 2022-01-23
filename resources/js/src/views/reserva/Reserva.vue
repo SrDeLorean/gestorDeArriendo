@@ -2,12 +2,12 @@
   <!-- TABLA CON HORARIOS !-->
   
   <b-card-code
-    title="Gestionar recerva"
+    title="Gestionar reserva"
   >
 
     <user-list-add-new
       :is-add-new-user-sidebar-active.sync="isAddNewUserSidebarActive"
-      :recerva="recerva"
+      :reserva="reserva"
     />
 
     <div>
@@ -47,7 +47,7 @@
           <b-th class="text-right">
             {{horario.descripcion}}
           </b-th>
-            <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.id)===true" @click="actionTd(cancha.descripcion, horario.descripcion)" variant="success">Libre</b-td>
+            <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.id)===true" @click="actionTd(cancha.id, cancha.descripcion, horario.id, horario.descripcion)" variant="success">Libre</b-td>
             <b-td v-else-if="soyYo(cancha.id, horario.id)" @click="horarioNoDisponible(cancha.id, horario.descripcion)" v-b-modal.modal-primary variant="primary">Ocupado</b-td>
             <b-td v-else @click="horarioNoDisponible(cancha.id, horario.descripcion)" v-b-modal.modal-danger variant="danger">Ocupado</b-td>
         </b-tr>
@@ -135,8 +135,10 @@ export default {
       isAddNewUserSidebarActive,
       codeSimple,
       dia: today.getFullYear() +'-'+today.getMonth()+1+'-'+today.getDate(),
-      recerva: {
+      reserva: {
+        idCancha: "",
         cancha: "",
+        idHorario: "",
         horario: ""
       },
       canchas: [],
@@ -156,9 +158,12 @@ export default {
     }
   },
   methods: {
-    actionTd($cancha, $horario){
-      this.recerva.cancha = $cancha
-      this.recerva.horario = $horario
+    actionTd($idCancha, $cancha, $idHorario, $horario){
+      this.reserva.idCancha = $idCancha
+      this.reserva.cancha = $cancha
+      this.reserva.idHorario = $idHorario
+      this.reserva.horario = $horario
+      this.reserva.dia = this.dia
       this.isAddNewUserSidebarActive=true
     },
     ocupado($cancha, $horario) {
