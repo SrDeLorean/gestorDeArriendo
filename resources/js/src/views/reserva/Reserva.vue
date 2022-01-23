@@ -14,14 +14,15 @@
     <label for="example-datepicker">1. Seleccione el dia en que decea jugar:</label>
     <b-form-datepicker
       id="example-datepicker"
-      v-model="value"
+      v-model="dia"
       class="mb-1"
     />
-    <p>Value: '{{ value }}'</p>
+    <p>dia: '{{ dia }}'</p>
   </div>
 
     <label for="table-simple">2. Seleccione el horario que desea jugar: </label>
     <b-table-simple
+      id="table"
       hover
       caption-top
       responsive
@@ -33,20 +34,20 @@
             Horario
           </b-th>
           <b-th v-for="cancha in canchas" v-bind:key="cancha.id" colspan="1">
-            {{cancha.nombre}}
+            {{cancha.descripcion}}
           </b-th>
         </b-tr>
       </b-thead>
       <b-tbody>
         <b-tr v-for="horario in horarios" v-bind:key="horario.id">
-          <b-th v-if="horario.nombre.split(':')[1]==='00'" rowspan="2">
-            {{horario.nombre}}
+          <b-th v-if="horario.descripcion.split(':')[1]==='00'" rowspan="2">
+            {{horario.descripcion}}
           </b-th>
           <b-th class="text-right">
-            {{horario.nombre}}
+            {{horario.descripcion}}
           </b-th>
-            <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.nombre)===true" @click="actionTd(cancha.id, horario.nombre)" variant="success">Libre</b-td>
-            <b-td v-else @click="horarioNoDisponible(cancha.id, horario.nombre)" variant="danger">Ocupado</b-td>
+            <b-td v-for="cancha in canchas" v-bind:key="cancha.id" v-if="ocupado(cancha.id, horario.descripcion)===true" @click="actionTd(cancha.id, horario.descripcion)" variant="success">Libre</b-td>
+            <b-td v-else @click="horarioNoDisponible(cancha.id, horario.descripcion)" variant="danger">Ocupado</b-td>
         </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -66,6 +67,7 @@ import {
 import { codeSimple } from './code'
 
 import UserListAddNew from './UserListAddNew.vue'
+import axios from 'axios'
 
     const isAddNewUserSidebarActive = false
 
@@ -87,48 +89,24 @@ export default {
     return {
       isAddNewUserSidebarActive,
       codeSimple,
-      value: '',
+      dia: '',
       recerva: {
         cancha: "",
         horario: ""
       },
-      canchas: [
-        {
-          id: 1,
-          nombre: 'cancha 1'
-        },
-        {
-          id: 2,
-          nombre: 'cancha 2'
-        },
-        {
-          id: 3,
-          nombre: 'cancha 3'
-        },
-        {
-          id: 4,
-          nombre: 'cancha 4'
-        }
-      ],
-      horarios: [
-        {
-          id: 1,
-          nombre: '8:00'
-        },
-        {
-          id: 2,
-          nombre: '8:30'
-        },
-        {
-          id: 3,
-          nombre: '9:00'
-        },
-        {
-          id: 4,
-          nombre: '9:30'
-        }
-      ]
+      canchas: [],
+      horarios: []
       
+    }
+  },
+  created() {
+    this.obtenerCanchas()
+    this.obtenerReservas()
+    this.obtenerHorarios()
+  },
+  watch: {
+    dia() {
+      this.recargarReservas();
     }
   },
   methods: {
@@ -139,14 +117,55 @@ export default {
       this.isAddNewUserSidebarActive=true
     },
     ocupado($cancha, $horario) {
-        if($cancha==1 || $horario=="9:00"){
-          return true
-        }
-        return false
-      },
-      horarioNoDisponible($cancha, $horario) {
-        console.log("el horario de la cancha:", $cancha, " horario:", $horario, " se encuentra ocupado")
+      console.log("ocupado")
+      if($cancha==1 || $horario=="9:00"){
+        return true
       }
+      return false
+    },
+    horarioNoDisponible($cancha, $horario) {
+      console.log("el horario de la cancha:", $cancha, " horario:", $horario, " se encuentra ocupado")
+    },
+    obtenerHorarios(){
+      var url = 'http://127.0.0.1:8000/api/horario';
+        axios.get(url)
+          .then(response => { 
+            console.log(response.data)
+            this.horarios = response.data.horarios
+          }).catch(error => {
+          if (error.response.status === 404) {
+            console.log(error)
+          }
+        })
+    },
+    obtenerCanchas(){
+      var url = 'http://127.0.0.1:8000/api/cancha';
+        axios.get(url)
+          .then(response => { 
+            console.log(response.data)
+            this.canchas = response.data.canchas
+          }).catch(error => {
+          if (error.response.status === 404) {
+            console.log(error)
+          }
+        })
+    },
+    obtenerReservas(){
+      var url = 'http://127.0.0.1:8000/api/reservaPorDia';
+        axios.post(url,{
+          "dia": this.dia
+        })
+          .then(response => { 
+            console.log(response.data)
+          }).catch(error => {
+          if (error.response.status === 404) {
+            console.log(error)
+          }
+        })
+    },
+    recargarReservas(){
+      console.log("holaaaaaaaa")
+    },
   },
 }
 </script>

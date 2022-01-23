@@ -18,7 +18,7 @@ class HorarioController extends Controller
         try{
             $horarios = Horario::all();
             return response()->json([
-                'horario'=>$horarios
+                'horarios'=>$horarios
             ], 200);
         } catch(\Illuminate\Database\QueryException $ex){
             return response()->json([
