@@ -16,6 +16,8 @@
       id="example-datepicker"
       v-model="value"
       class="mb-1"
+      :min="min"
+      :max="max"
     />
     <p>Value: '{{ value }}'</p>
   </div>
@@ -58,11 +60,10 @@
 </template>
 
 <script>
-import { BFormDatepicker } from 'bootstrap-vue'
 import { ref, onUnmounted } from '@vue/composition-api'
 import BCardCode from '@core/components/b-card-code/BCardCode.vue'
 import {
-  BTableSimple, BThead, BTr, BTh, BTd, BTbody, BTfoot,
+  BFormDatepicker, BTableSimple, BThead, BTr, BTh, BTd, BTbody, BTfoot,
 } from 'bootstrap-vue'
 import { codeSimple } from './code'
 
@@ -85,7 +86,20 @@ export default {
     BFormDatepicker,
   },
   data() {
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    // 15th two months prior
+    const minDate = new Date(today)
+    minDate.setMonth(minDate.getMonth())
+    minDate.setDate(minDate.getDate())
+    // 15th in two months
+    const maxDate = new Date(today)
+    maxDate.setMonth(maxDate.getMonth() + 2)
+    maxDate.setDate(15)
     return {
+      value: '',
+      min: minDate,
+      max: maxDate,
       isAddNewUserSidebarActive,
       codeSimple,
       value: '',
