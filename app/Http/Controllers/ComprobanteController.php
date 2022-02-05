@@ -93,7 +93,11 @@ class ComprobanteController extends Controller
      */
     public function show(comprobante $comprobante)
     {
-        //
+        $comprobante->getUsuario;
+        $comprobante->getEstado;
+        $payment = null;
+        return response()->json([ $comprobante, $payment
+            ], 200);
     }
 
     /**
