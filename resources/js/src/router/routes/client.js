@@ -20,12 +20,32 @@ export default [{
     },
     {
         path: '/reserva',
-        name: 'client-reserva',
+        name: 'reserva-index',
         meta: {
             resource: 'client',
             action: 'read',
         },
         component: () =>
-            import ('@/views/reserva/Reserva.vue'),
+            import ('@/views/reserva/reserva-index/ReservaIndex.vue'),
+    },
+    {
+        path: '/reserva-create',
+        name: 'reserva-create',
+        meta: {
+            resource: 'client',
+            action: 'read',
+        },
+        component: () =>
+            import ('@/views/reserva/reserva-create/ReservaCreate.vue'),
+    },
+    {
+        path: '/reserva/show/:id',
+        name: 'reserva-show',
+        meta: {
+            resource: 'client',
+            action: 'read',
+        },
+        component: () =>
+            import ('@/views/reserva/reserva-show/ReservaShow.vue'),
     },
 ]

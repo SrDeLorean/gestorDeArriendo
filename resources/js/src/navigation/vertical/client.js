@@ -20,12 +20,31 @@ export default [{
 
     },
     {
-        title: 'reserva',
-        route: 'client-reserva',
+        title: 'reserva lista',
+        route: 'reserva-index',
         icon: 'ShoppingCartIcon',
 
         resource: 'client',
         action: 'read',
 
     },
+    {
+        title: 'reserva create',
+        route: 'reserva-create',
+        icon: 'ShoppingCartIcon',
+
+        resource: 'client',
+        action: 'read',
+
+    },
+    {
+        title: 'reserva show',
+        route: 'reserva-show',
+        icon: 'ShoppingCartIcon',
+
+        resource: 'client',
+        action: 'read',
+
+    },
+
 ]

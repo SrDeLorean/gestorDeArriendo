@@ -17,4 +17,20 @@ class Reserva extends Model
     protected $fillable = [
         'dia', 'idUsuario', 'idCancha', 'idHorario', 'idComprobante'
     ];
+
+    public function getUsuario(){
+        return $this->belongsTo('App\Models\User','idUsuario');
+    }
+
+    public function getCancha(){
+        return $this->belongsTo('App\Models\Cancha','idCancha');
+    }
+
+    public function getHorario(){
+        return $this->belongsTo('App\Models\Horario','idHorario');
+    }
+
+    public function getComprobante(){
+        return $this->belongsTo('App\Models\Comprobante','idComprobante');
+    }
 }

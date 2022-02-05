@@ -31,11 +31,17 @@ Route::group(['middleware' => ['jwt.verify']], function() {
 });
 
 Route::resource('user', UserController::class);
+Route::post('usuariosConFiltro', [UserController::class, 'usuariosConFiltro']);
+
 Route::resource('cancha', CanchaController::class);
+
 Route::resource('horario', HorarioController::class);
+
 Route::resource('reserva', ReservaController::class);
+Route::post('reservasConFiltro', [ReservaController::class, 'reservasConFiltro']);
 Route::post('reservaPorDia', [ReservaController::class, 'reservaPorDia']);
 Route::post('reservaDisponible', [ReservaController::class, 'reservaDisponible']);
-Route::resource('comprobante', ComprobanteController::class);
 
+Route::resource('comprobante', ComprobanteController::class);
+Route::post('comprobanteConFiltro', [ComprobanteController::class, 'comprobanteConFiltro']);
 

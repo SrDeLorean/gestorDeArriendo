@@ -86,15 +86,14 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function usuariosConFiltro(Request $request)
     {
         $entradas = $request->all();
         try{
             if($entradas['sortDesc']){
-                $usuarios = User::OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['page']);
-
+                $usuarios = User::OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
             }else{
-                $usuarios = User::OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['page']);
+                $usuarios = User::OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
             }
             return response()->json([ $usuarios
             ], 200);
@@ -106,6 +105,17 @@ class UserController extends Controller
                 'data' => ['error'=>$entradas]
             ], 409);
         }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+
     }
 
     

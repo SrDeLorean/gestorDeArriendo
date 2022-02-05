@@ -15,9 +15,15 @@ class CreateComprobantesTable extends Migration
     {
         Schema::create('comprobantes', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('pago');
             $table->bigInteger('idUsuario')->unsigned();
             $table->foreign('idUsuario')->references('id')->on('users');
+            $table->date('dia');
+            $table->integer('bloques');
+            $table->string('inicio');
+            $table->string('termino');
+            $table->bigInteger('total');
+            $table->bigInteger('idEstado')->unsigned();
+            $table->foreign('idEstado')->references('id')->on('estados');
             $table->timestamps();
         });
     }

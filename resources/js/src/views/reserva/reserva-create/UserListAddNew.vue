@@ -71,7 +71,7 @@
           </b-form-group>
           <b-form-group
             label="Tiempo de juego"
-            label-for="tiempo"
+            label-for="bloque"
           >
             <b-button
               v-ripple.400="'rgba(255, 159, 67, 0.15)'"
@@ -202,17 +202,17 @@ export default {
         this.boton60= true,
         this.boton90= false,
         this.boton120= false, 
-        this.tiempo=1
+        this.bloque=2
       }else if($id==2){
         this.boton60= false,
         this.boton90= true,
         this.boton120= false, 
-        this.tiempo=2
+        this.bloque=3
       }else{
         this.boton60= false,
         this.boton90= false,
         this.boton120= true,
-        this.tiempo=3
+        this.bloque=4
       }
     },
     onSubmit(){
@@ -221,7 +221,7 @@ export default {
           "idCancha": this.reserva.idCancha,
           "idHorario": this.reserva.idHorario,
           "dia": this.reserva.dia,
-          "tiempo": this.tiempo,
+          "bloque": this.bloque,
           "idUsuario": this.userData.id
         })
           .then(response => { 
@@ -267,11 +267,11 @@ export default {
       disponible90: false,
       disponible120: false,
       accion: false,
-      tiempo: 1,
+      bloque: 1,
       boton60: false,
       boton90: false,
       boton120: false,
-      tiempo: "",
+      bloque: "",
       userData: JSON.parse(localStorage.getItem('userData'))
     }
   },

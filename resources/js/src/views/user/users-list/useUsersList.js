@@ -49,11 +49,11 @@ export default function useUsersList() {
     })
 
     const fetchUsers = (ctx, callback) => {
-        var url = 'http://127.0.0.1:8000/api/user';
+        var url = 'http://127.0.0.1:8000/api/usuariosConFiltro';
         axios.post(url, {
-                q: searchQuery.value,
+                searchQuery: searchQuery.value,
                 perPage: perPage.value,
-                page: currentPage.value,
+                currentPage: currentPage.value,
                 sortBy: sortBy.value,
                 sortDesc: isSortDirDesc.value,
                 role: roleFilter.value,
