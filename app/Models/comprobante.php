@@ -15,6 +15,14 @@ class Comprobante extends Model
      * @var array
      */
     protected $fillable = [
-        'pago', 'idUsuario'
+        'idUsuario', 'dia', 'bloques', 'inicio', 'termino', 'total', 'idEstado'
     ];
+
+    public function getUsuario(){
+        return $this->belongsTo('App\Models\User','idUsuario');
+    }
+
+    public function getEstado(){
+        return $this->belongsTo('App\Models\Estado','idEstado');
+    }
 }

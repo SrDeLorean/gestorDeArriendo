@@ -14,17 +14,7 @@ class ComprobanteSeeder extends Seeder
      */
     public function run()
     {
-        Comprobante::create([
-            'pago' => 10000,
-            'idUsuario' => 1,
-        ]);
-        Comprobante::create([
-            'pago' => 20000,
-            'idUsuario' => 2,
-        ]);
-        Comprobante::create([
-            'pago' => 30000,
-            'idUsuario' => 3,
-        ]);
+
+
     }
 }
