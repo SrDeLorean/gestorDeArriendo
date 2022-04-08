@@ -45,3 +45,4 @@ Route::post('reservaDisponible', [ReservaController::class, 'reservaDisponible']
 Route::resource('comprobante', ComprobanteController::class);
 Route::post('comprobanteConFiltro', [ComprobanteController::class, 'comprobanteConFiltro']);
 
+Route::get('webpayplus/getStatus', [ComprobanteController::class, 'getStatus']);
