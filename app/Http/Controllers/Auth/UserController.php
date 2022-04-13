@@ -113,9 +113,47 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request){
+        $validator = Validator::make($request->all(), [
+            'fullname' => 'required|string',
+            'email' => 'required|string|email|unique:users',
+            'password' => 'required|string|min:6',
+            'role' => 'required|string',
+        ]);
 
+        if($validator->fails()){
+            return response()->json([
+                'success' => false,
+                'code' => 2,
+                'message' => 'Error en las credenciales',
+                'data' => ['error'=>$validator->errors()]
+            ], 422);
+        }
+        try{
+            $userData = User::create([
+                'fullname' => $request->get('fullname'),
+                'email' => $request->get('email'),
+                'password' => Hash::make($request->get('password')),
+                'role' => $request->get('role'),
+            ]);
+
+            $accessToken = JWTAuth::fromUser($userData);
+
+            return response()->json([
+                'success' => true,
+                'code' => 1,
+                'message' => 'Se registro al usuario con exito',
+                'data' => $userData
+            ], 200);
+
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
     }
 
     

@@ -20,7 +20,13 @@ class ReservaController extends Controller
     public function index()
     {
         try{
-            $reservas = Reserva::all();
+            $credenciales = JWTAuth::parseToken()->authenticate();
+            return $credenciales;
+            if($credenciales->rol=="admin" || $credenciales->rol=="desarrollador"){
+                $reservas = Reserva::all();
+            }else{
+                $reservas = Reserva::where('idUsuario', $credenciales->id)->get();
+            }
             return response()->json([
                 'reservas'=>$reservas
             ], 200);

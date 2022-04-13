@@ -14,11 +14,10 @@ export default function useUsersList() {
     // Table Handlers
     const tableColumns = [
         { key: 'id', sortable: true },
-        { key: 'fullName', sortable: true },
+        { key: 'fullname', sortable: true },
         { key: 'email', sortable: true },
         { key: 'role', sortable: true },
-        { key: 'delete', sortable: true },
-        { key: 'actions' },
+        { key: 'actions', sortable: false },
     ]
     const perPage = ref(10)
     const totalUsers = ref(0)
