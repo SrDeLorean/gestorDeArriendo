@@ -57,6 +57,11 @@ export default function useInvoicesList() {
         console.log(searchQuery.value)
         console.log(sortBy.value)
         console.log(isSortDirDesc.value)
+        var config = {
+            headers: {
+                Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+            }
+        }
         var url = 'http://127.0.0.1:8000/api/comprobanteConFiltro';
         axios.post(url, {
                 searchQuery: searchQuery.value,
@@ -64,7 +69,7 @@ export default function useInvoicesList() {
                 currentPage: currentPage.value,
                 sortBy: sortBy.value,
                 sortDesc: isSortDirDesc.value,
-            })
+            }, config)
             .then(response => {
                 console.log(response.data)
                 let reservas = response.data

@@ -42,31 +42,7 @@
         />
       </b-tab>
 
-      <!-- Tab: Information -->
-      <b-tab>
-        <template #title>
-          <feather-icon
-            icon="InfoIcon"
-            size="16"
-            class="mr-0 mr-sm-50"
-          />
-          <span class="d-none d-sm-inline">Information</span>
-        </template>
-        <user-edit-tab-information class="mt-2 pt-75" />
-      </b-tab>
-
-      <!-- Tab: Social -->
-      <b-tab>
-        <template #title>
-          <feather-icon
-            icon="Share2Icon"
-            size="16"
-            class="mr-0 mr-sm-50"
-          />
-          <span class="d-none d-sm-inline">Social</span>
-        </template>
-        <user-edit-tab-social class="mt-2 pt-75" />
-      </b-tab>
+      
     </b-tabs>
   </component>
 </template>
@@ -109,8 +85,13 @@ export default {
       if (store.hasModule(USER_APP_STORE_MODULE_NAME)) store.unregisterModule(USER_APP_STORE_MODULE_NAME)
     })
 
+    var config = {
+        headers: {
+            Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+        }
+    }
     var url = 'http://127.0.0.1:8000/api/user/'+router.currentRoute.params.id+'/edit';
-    axios.get(url)
+    axios.get(url, config)
       .then(response => { 
         userData.value = response.data.userData 
       }).catch(error => {

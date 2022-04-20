@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Auth;
     use Illuminate\Support\Facades\Hash;
     use Illuminate\Support\Facades\Validator;
     use JWTAuth;
+    use App\Models\Comprobante;
     use Tymon\JWTAuth\Exceptions\JWTException;
     use App\Http\Controllers\Controller;
 
@@ -19,7 +20,7 @@ class UserController extends Controller
     public function index()
 {
         try{
-            $usuarios = User::all();
+            $usuarios = User::withTrashed()->get();
             return response()->json([
                 'total' => $usuarios->count(),
                 'users'=>$usuarios
@@ -43,9 +44,21 @@ class UserController extends Controller
     public function show($id)
     {
         try{
-            $userData = User::find($id);
+            $credenciales = JWTAuth::parseToken()->authenticate();
+            if($credenciales->role=="admin" || $credenciales->role=="desarrollador"){
+                $userData = User::withTrashed()->find($id);
+            }else{
+                $userData = $credenciales;
+            }
+            $comprobantes = Comprobante::where('idUsuario', $userData->id)->get();
+            foreach($comprobantes as $comprobante){
+                $comprobante->usuario = $comprobante->getUsuario->fullname;
+                $comprobante->estado = $comprobante->getEstado->descripcion;
+            }
             return response()->json([
-                'userData'=>$userData
+                'userData'=>$userData,
+                '$credenciales'=>$credenciales,
+                'comprobantes'=>$comprobantes
             ], 200);
         } catch(\Illuminate\Database\QueryException $ex){
             return response()->json([
@@ -91,9 +104,9 @@ class UserController extends Controller
         $entradas = $request->all();
         try{
             if($entradas['sortDesc']){
-                $usuarios = User::OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
+                $usuarios = User::withTrashed()->OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
             }else{
-                $usuarios = User::OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
+                $usuarios = User::withTrashed()->OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
             }
             return response()->json([ $usuarios
             ], 200);
@@ -113,9 +126,47 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request){
+        $validator = Validator::make($request->all(), [
+            'fullname' => 'required|string',
+            'email' => 'required|string|email|unique:users',
+            'password' => 'required|string|min:6',
+            'role' => 'required|string',
+        ]);
 
+        if($validator->fails()){
+            return response()->json([
+                'success' => false,
+                'code' => 2,
+                'message' => 'Error en las credenciales',
+                'data' => ['error'=>$validator->errors()]
+            ], 422);
+        }
+        try{
+            $userData = User::create([
+                'fullname' => $request->get('fullname'),
+                'email' => $request->get('email'),
+                'password' => Hash::make($request->get('password')),
+                'role' => $request->get('role'),
+            ]);
+
+            $accessToken = JWTAuth::fromUser($userData);
+
+            return response()->json([
+                'success' => true,
+                'code' => 1,
+                'message' => 'Se registro al usuario con exito',
+                'data' => $userData
+            ], 200);
+
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
     }
 
     
@@ -129,7 +180,43 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'fullname' => 'required|string',
+            'email' => 'required|string|email',
+            'password' => 'required|string|min:6',
+            'role' => 'required|string',
+        ]);
+
+        if($validator->fails()){
+            return response()->json([
+                'success' => false,
+                'code' => 2,
+                'message' => 'Error en las credenciales',
+                'data' => ['error'=>$validator->errors()]
+            ], 422);
+        }
+        try{
+            $usuario = User::find($id);
+            $usuario->fullname = $request->get('fullname');
+            $usuario->email = $request->get('email');
+            $usuario->role = $request->get('role');
+            $usuario->password = bcrypt($request->get('password'));
+            $usuario->save();
+            return response()->json([
+                'success' => true,
+                'code' => 1,
+                'message' => 'Se registro al usuario con exito',
+                'data' => $usuario
+            ], 200);
+
+        } catch(\Illuminate\Database\QueryException $ex){
+            return response()->json([
+                'success' => false,
+                'code' => 101,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
     }
 
     /**
@@ -140,7 +227,66 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try{
+            $usuario = User::find($id);
+            if($usuario==null){
+                return response()->json([
+                    'success' => false,
+                    'code' => 701,
+                    'message' => 'El usuario con el id '.$id.' no existe',
+                    'data' => null
+                ], 409 );
+            }
+            $usuario->delete();
+            return response()->json([
+                'success' => true,
+                'code' => 700,
+                'message' => "Operacion realizada con exito",
+                'data' => ['usuario'=>$usuario]
+            ], 200);
+        //----- Mecanismos anticaidas y reporte de errores -----
+        //catch que se encarga en responder que paso en la sentencia sql
+        }catch(\Illuminate\Database\QueryException $ex){ 
+            return response()->json([
+                'success' => false,
+                'code' => 702,
+                'message' => "Error: Tenemos problemas con nuestra base de datos, intente mas tarde ",
+                'data' => ['error'=>$ex]
+            ], 409 );
+        }
+    }
+
+    /**
+     * Metodo que se encarga recuperar un usuario
+     * Errores code inician 900
+     * @return \Illuminate\Http\Response
+     */
+    public function restore($id){
+        try{
+            $usuario=User::onlyTrashed()->where('id',$id)->first();
+            if($usuario==null){
+                return response()->json([
+                    'success' => false,
+                    'code' => 901,
+                    'message' => "El usuario no se logro recuperar",
+                    'data' => ['usuario'=>$usuario]
+                ], 409);
+            }
+            User::onlyTrashed()->where('id',$id)->restore();
+            return response()->json([
+                'success' => true,
+                'code' => 900,
+                'message' => "El usuario recupero con exito",
+                'data' => ['usuario'=>$usuario]
+            ], 200);
+        }catch(\Illuminate\Database\QueryException $ex){ 
+            return response()->json([
+                'success' => false,
+                'code' => 902,
+                'message' => 'Error al solicitar peticion a la base de datos',
+                'data' => ['error'=>$ex]
+            ], 409);
+        }
     }
 
     public function authenticate(Request $request)

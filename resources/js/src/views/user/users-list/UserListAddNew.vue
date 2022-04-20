@@ -39,53 +39,19 @@
           @reset.prevent="resetForm"
         >
 
-          <!-- Full Name -->
-          <validation-provider
-            #default="validationContext"
-            name="Full Name"
-            rules="required"
+          <b-form-group
+            label="Full Name"
+            label-for="full-name"
           >
-            <b-form-group
-              label="Full Name"
-              label-for="full-name"
-            >
-              <b-form-input
-                id="full-name"
-                v-model="userData.fullName"
-                autofocus
-                :state="getValidationState(validationContext)"
-                trim
-                placeholder="John Doe"
-              />
+            <b-form-input
+              id="full-name"
+              v-model="userData.fullname"
+              autofocus
+              trim
+              placeholder="Sebastian Ibarra"
+            />
 
-              <b-form-invalid-feedback>
-                {{ validationContext.errors[0] }}
-              </b-form-invalid-feedback>
-            </b-form-group>
-          </validation-provider>
-
-          <!-- Username -->
-          <validation-provider
-            #default="validationContext"
-            name="Username"
-            rules="required|alpha-num"
-          >
-            <b-form-group
-              label="Username"
-              label-for="username"
-            >
-              <b-form-input
-                id="username"
-                v-model="userData.username"
-                :state="getValidationState(validationContext)"
-                trim
-              />
-
-              <b-form-invalid-feedback>
-                {{ validationContext.errors[0] }}
-              </b-form-invalid-feedback>
-            </b-form-group>
-          </validation-provider>
+          </b-form-group>
 
           <!-- Email -->
           <validation-provider
@@ -102,6 +68,7 @@
                 v-model="userData.email"
                 :state="getValidationState(validationContext)"
                 trim
+                placeholder="example@example.com"
               />
 
               <b-form-invalid-feedback>
@@ -110,53 +77,37 @@
             </b-form-group>
           </validation-provider>
 
-          <!-- Company -->
-          <validation-provider
-            #default="validationContext"
-            name="Contact"
-            rules="required"
-          >
-            <b-form-group
-              label="Contact"
-              label-for="contact"
-            >
-              <b-form-input
-                id="contact"
-                v-model="userData.contact"
-                :state="getValidationState(validationContext)"
-                trim
-              />
 
-              <b-form-invalid-feedback>
-                {{ validationContext.errors[0] }}
-              </b-form-invalid-feedback>
-            </b-form-group>
-          </validation-provider>
-
-          <!-- User Role -->
-          <validation-provider
-            #default="validationContext"
-            name="User Role"
-            rules="required"
+          <b-form-group
+            label="Password"
+            label-for="Password"
           >
-            <b-form-group
-              label="User Role"
-              label-for="user-role"
-              :state="getValidationState(validationContext)"
-            >
-              <v-select
-                v-model="userData.role"
-                :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
-                :options="roleOptions"
-                :reduce="val => val.value"
-                :clearable="false"
-                input-id="user-role"
-              />
-              <b-form-invalid-feedback :state="getValidationState(validationContext)">
-                {{ validationContext.errors[0] }}
-              </b-form-invalid-feedback>
-            </b-form-group>
-          </validation-provider>
+            <b-form-input
+              id="password"
+              v-model="userData.password"
+              trim
+            />
+
+        
+          </b-form-group>
+    
+
+
+          <b-form-group
+            label="User Role"
+            label-for="user-role"
+          >
+            <v-select
+              v-model="userData.role"
+              :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
+              :options="roleOptions"
+              placeholder="Selecciona un rol"
+              :reduce="val => val.value"
+              :clearable="false"
+              input-id="user-role"
+            />
+          
+          </b-form-group>
 
           <!-- Form Actions -->
           <div class="d-flex mt-2">
@@ -166,7 +117,7 @@
               class="mr-2"
               type="submit"
             >
-              Add
+              Agregar
             </b-button>
             <b-button
               v-ripple.400="'rgba(186, 191, 199, 0.15)'"
@@ -174,7 +125,7 @@
               variant="outline-secondary"
               @click="hide"
             >
-              Cancel
+              Cancelar
             </b-button>
           </div>
 
@@ -193,7 +144,9 @@ import formValidation from '@core/comp-functions/forms/form-validation'
 import Ripple from 'vue-ripple-directive'
 import vSelect from 'vue-select'
 import countries from '@/@fake-db/data/other/countries'
-import store from '@/store'
+
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
 export default {
   components: {
@@ -240,14 +193,10 @@ export default {
   },
   setup(props, { emit }) {
     const blankUserData = {
-      fullName: '',
-      username: '',
+      fullname: '',
       email: '',
-      role: null,
-      currentPlan: null,
-      company: '',
-      country: '',
-      contact: '',
+      password: '',
+      role: '',
     }
 
     const userData = ref(JSON.parse(JSON.stringify(blankUserData)))
@@ -256,9 +205,34 @@ export default {
     }
 
     const onSubmit = () => {
-      store.dispatch('app-user/addUser', userData.value).then(() => {
-        emit('refetch-data')
-        emit('update:is-add-new-user-sidebar-active', false)
+      var config = {
+            headers: {
+                Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+            }
+        }
+      var url = 'http://127.0.0.1:8000/api/user';
+        axios.post(url, {
+          "fullname": userData.value.fullname,
+          "email": userData.value.email,
+          "password": userData.value.password,
+          "role": userData.value.role,
+        }, config)
+          .then(response => { 
+            console.log(response)
+            Swal.fire({
+              title: "Registrar Usuario",
+              text: "Se ha registrado el usuario con exito",
+              icon: "success",
+              confirmButtonText: "Ok",
+            });
+            emit('refetch-data')
+            emit('update:is-add-new-user-sidebar-active', false)
+          }).catch(error => {
+            Swal.fire({
+              icon: "error",
+              title: "Error al registra usuario",
+              text: error.response.data.message,
+            });
       })
     }
 

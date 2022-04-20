@@ -225,7 +225,7 @@ export default {
           "idUsuario": this.userData.id
         })
           .then(response => { 
-            console.log(response)
+            window.location.href = 'http://127.0.0.1:8000/reserva/show/'+response.data.comprobante.id
           }).catch(error => {
             console.log(error)
           

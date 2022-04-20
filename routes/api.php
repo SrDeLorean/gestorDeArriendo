@@ -28,9 +28,11 @@ Route::post('logout', [UserController::class, 'logout']);
 
 Route::group(['middleware' => ['jwt.verify']], function() {
     /*AÑADE AQUI LAS RUTAS QUE QUIERAS PROTEGER CON JWT*/
+    Route::post('reservasConFiltro', [ReservaController::class, 'reservasConFiltro']);
+    Route::resource('user', UserController::class);
+    Route::post('user/restore/{id}',[UserController::class, 'restore']);
 });
 
-Route::resource('user', UserController::class);
 Route::post('usuariosConFiltro', [UserController::class, 'usuariosConFiltro']);
 
 Route::resource('cancha', CanchaController::class);
@@ -38,10 +40,10 @@ Route::resource('cancha', CanchaController::class);
 Route::resource('horario', HorarioController::class);
 
 Route::resource('reserva', ReservaController::class);
-Route::post('reservasConFiltro', [ReservaController::class, 'reservasConFiltro']);
 Route::post('reservaPorDia', [ReservaController::class, 'reservaPorDia']);
 Route::post('reservaDisponible', [ReservaController::class, 'reservaDisponible']);
 
 Route::resource('comprobante', ComprobanteController::class);
 Route::post('comprobanteConFiltro', [ComprobanteController::class, 'comprobanteConFiltro']);
 
+Route::get('webpayplus/getStatus', [ComprobanteController::class, 'getStatus']);

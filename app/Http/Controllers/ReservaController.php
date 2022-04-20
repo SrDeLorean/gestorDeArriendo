@@ -6,6 +6,7 @@ use App\Models\Reserva;
 use App\Models\Horario;
 use App\Models\Comprobante;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use App\Http\Requests\StorereservaRequest;
 use App\Http\Requests\UpdatereservaRequest;
 
@@ -151,7 +152,7 @@ class ReservaController extends Controller
                 ]);
             }
             return response()->json([
-                '$comprobante'=>$comprobante
+                'comprobante'=>$comprobante
             ], 200);
         } catch(\Illuminate\Database\QueryException $ex){
             return response()->json([

@@ -271,16 +271,28 @@
         class="invoice-actions"
       >
         <b-card>
-
           <!-- Button: Send Invoice -->
-          <b-button
+          <form v-if="invoiceData.get_estado.descripcion=='Reservada'" method="get" :action=paymentDetails.url>
+            <input type="hidden" name="token_ws"  :value=paymentDetails.token />
+            <b-button 
+              v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+              variant="primary"
+              class="mb-75"
+              block
+              type="submit"
+            >
+              Pagar
+            </b-button>
+          </form>
+          <!-- Button: Send Invoice -->
+          <b-button v-else
             v-ripple.400="'rgba(255, 255, 255, 0.15)'"
-            v-b-toggle.sidebar-send-invoice
             variant="primary"
             class="mb-75"
             block
+            disabled
           >
-            Send Invoice
+            Pagar
           </b-button>
 
           <!-- Button: DOwnload -->
@@ -304,33 +316,28 @@
             Print
           </b-button>
 
-          <!-- Button: Edit -->
-          <b-button
-            v-ripple.400="'rgba(186, 191, 199, 0.15)'"
-            variant="outline-secondary"
-            class="mb-75"
-            block
-            :to="{ name: 'apps-invoice-edit', params: { id: $route.params.id } }"
-          >
-            Edit
-          </b-button>
-
           <!-- Button: Add Payment -->
-          <b-button
-            v-b-toggle.sidebar-invoice-add-payment
+          <b-button v-if="invoiceData.get_estado.descripcion!='Reservada'"
             v-ripple.400="'rgba(255, 255, 255, 0.15)'"
-            variant="success"
-            class="mb-75"
+            variant="danger"
+            class="mb-75" 
+            block
+            disabled
+          >
+            Cancelar
+          </b-button>
+          <!-- Button: Add Payment -->
+          <b-button v-else
+            v-ripple.400="'rgba(255, 255, 255, 0.15)'"
+            variant="danger"
+            class="mb-75" 
             block
           >
-            Add Payment
+            Cancelar
           </b-button>
         </b-card>
       </b-col>
     </b-row>
-
-    <invoice-sidebar-send-invoice />
-    <invoice-sidebar-add-payment />
   </section>
 </template>
 
@@ -344,11 +351,13 @@ import {
 } from 'bootstrap-vue'
 import Logo from '@core/layouts/components/Logo.vue'
 import Ripple from 'vue-ripple-directive'
-import invoiceStoreModule from '../invoiceStoreModule'
-import InvoiceSidebarSendInvoice from '../InvoiceSidebarSendInvoice.vue'
-import InvoiceSidebarAddPayment from '../InvoiceSidebarAddPayment.vue'
 
 export default {
+  data() {
+    return {
+      botonPagar: '',
+    }
+  },
   directives: {
     Ripple,
     'b-toggle': VBToggle,
@@ -365,8 +374,6 @@ export default {
     BLink,
 
     Logo,
-    InvoiceSidebarAddPayment,
-    InvoiceSidebarSendInvoice,
   },
   setup() {
     const invoiceData = ref(null)
@@ -374,17 +381,15 @@ export default {
      // Invoice Description
     // ? Your real data will contain this information
     const invoiceDescription = ref([{
-        taskTitle: 'Native App Development',
-        taskDescription: 'Developed a full stack native app using React Native, Bootstrap & Python',
-        rate: '$60.00',
-        hours: '30',
-        total: '$1,800.00',
+        taskTitle: '',
+        taskDescription: '',
+        rate: '',
+        hours: '',
+        total: '',
       }])
 
     const INVOICE_APP_STORE_MODULE_NAME = 'app-invoice'
 
-    // Register module
-    if (!store.hasModule(INVOICE_APP_STORE_MODULE_NAME)) store.registerModule(INVOICE_APP_STORE_MODULE_NAME, invoiceStoreModule)
 
     // UnRegister on leave
     onUnmounted(() => {
@@ -398,15 +403,16 @@ export default {
         invoiceData.value = response.data[0]
         paymentDetails.value = response.data[1]
         invoiceDescription.value = [{
-        taskTitle: 'Arriendo de cancha',
-        taskDescription: 'Se arrienda la cancha bla bla bla',
-        valor: '$10000',
-        bloques: response.data[0].bloques,
-        total: '$'+response.data[0].total,
-      }]
+          taskTitle: 'Arriendo de cancha',
+          taskDescription: 'Se arrienda la cancha bla bla bla',
+          valor: '$10000',
+          bloques: response.data[0].bloques,
+          total: '$'+response.data[0].total,
+        }]
       })
       .catch(error => {
         if (error.response.status === 404) {
+          console.log("errorrrrrrrrrr")
           invoiceData.value = undefined
         }
       })

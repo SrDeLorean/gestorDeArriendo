@@ -34,7 +34,35 @@
         </b-col>
       </b-row>
 
-      <invoice-list />
+      <b-card-code
+        title="Comprobantes"
+        no-body
+      >
+        <b-table
+          :fields="fields"
+          :items="comprobantes"
+          responsive
+        >
+
+          <!-- Column: Id -->
+        <template #cell(id)="data">
+          <b-link
+            :to="{ name: 'reserva-show', params: { id: data.item.id }}"
+            class="font-weight-bold"
+          >
+            #{{ data.value }}
+          </b-link>
+        </template>
+
+        </b-table>
+
+        <template #code>
+          {{ codeFormatterCallback }}
+        </template>
+
+        
+      </b-card-code>
+
     </template>
 
   </div>
@@ -44,6 +72,8 @@
 import store from '@/store'
 import router from '@/router'
 import axios from 'axios'
+import Swal from 'sweetalert2'
+
 import { ref, onUnmounted } from '@vue/composition-api'
 import {
   BRow, BCol, BAlert, BLink,
@@ -54,6 +84,9 @@ import UserViewUserInfoCard from './UserViewUserInfoCard.vue'
 import UserViewUserPlanCard from './UserViewUserPlanCard.vue'
 import UserViewUserTimelineCard from './UserViewUserTimelineCard.vue'
 import UserViewUserPermissionsCard from './UserViewUserPermissionsCard.vue'
+import BCardCode from '@core/components/b-card-code/BCardCode.vue'
+import { BTable} from 'bootstrap-vue'
+import { codeFormatterCallback } from './code'
 
 export default {
   components: {
@@ -61,6 +94,8 @@ export default {
     BCol,
     BAlert,
     BLink,
+    BCardCode,
+    BTable,
 
     // Local Components
     UserViewUserInfoCard,
@@ -70,8 +105,13 @@ export default {
 
     InvoiceList,
   },
+  model: {
+    prop: 'isAddNewUserSidebarActive',
+    event: 'update:is-add-new-user-sidebar-active',
+  },
   setup() {
     const userData = ref(null)
+    const comprobantes = ref(null)
 
     const USER_APP_STORE_MODULE_NAME = 'app-user'
 
@@ -83,20 +123,44 @@ export default {
       if (store.hasModule(USER_APP_STORE_MODULE_NAME)) store.unregisterModule(USER_APP_STORE_MODULE_NAME)
     })
 
+    var config = {
+            headers: {
+                Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+            }
+        }
     var url = 'http://127.0.0.1:8000/api/user/';
-    axios.get(url+router.currentRoute.params.id)
+    axios.get(url+router.currentRoute.params.id, config)
       .then(response => { 
         userData.value = response.data.userData 
+        comprobantes.value = response.data.comprobantes 
+        console.log(response)
       }).catch(error => {
       if (error.response.status === 404) {
         userData.value = undefined
+        comprobantes.value = undefined 
       }
     })
 
     return {
       userData,
+      comprobantes,
+      fields: [
+          { key: 'id', label: '#', sortable: true },
+          { key: 'dia', label: 'Dia', sortable: true },
+          { key: 'bloques', label: 'Bloques', sortable: true },
+          { key: 'inicio', label: 'Inicio', sortable: true },
+          { key: 'termino', label: 'Termino', sortable: true },
+          { key: 'estado', label: 'Estado', sortable: true },
+          { key: 'total', label: 'Total', sortable: true, formatter: val => `$${val}` },
+          { key: 'created_at', label: 'Registrada', sortable: true },
+      ],
+      items: [
+      ],
+      codeFormatterCallback,
+
     }
   },
+
 }
 </script>
 
