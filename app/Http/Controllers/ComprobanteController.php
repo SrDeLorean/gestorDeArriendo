@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Comprobante;
 use App\Models\Reserva;
 use App\Models\Cancha;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorecomprobanteRequest;
 use App\Http\Requests\UpdatecomprobanteRequest;
@@ -53,16 +54,26 @@ class ComprobanteController extends Controller
     {
         $entradas = $request->all();
         try{
-            if($entradas['sortDesc']){
-                $comprobantes = Comprobante::OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
+            $credenciales = JWTAuth::parseToken()->authenticate();
+            if($credenciales->role=="admin" || $credenciales->role=="desarrollador"){
+                if($entradas['sortDesc']){
+                    $comprobantes = Comprobante::OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
+                }else{
+                    $comprobantes = Comprobante::OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
+                }
             }else{
-                $comprobantes = Comprobante::OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
+                if($entradas['sortDesc']){
+                    $comprobantes = Comprobante::where('idUsuario', $credenciales->id)->OrderBy($entradas['sortBy'], 'desc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
+                }else{
+                    $comprobantes = Comprobante::where('idUsuario', $credenciales->id)->OrderBy($entradas['sortBy'], 'asc')->paginate($perPage = $entradas['perPage'], $columns = ['*'], $pageName = 'page', $page = $entradas['currentPage']);
+                }
             }
+           
             foreach($comprobantes as $comprobante){
                 $comprobante->usuario = $comprobante->getUsuario->fullname;
                 $comprobante->estado = $comprobante->getEstado->descripcion;
             }
-            return response()->json([ $comprobantes
+            return response()->json([ $comprobantes, $credenciales
             ], 200);
         } catch(\Illuminate\Database\QueryException $ex){
             return response()->json([

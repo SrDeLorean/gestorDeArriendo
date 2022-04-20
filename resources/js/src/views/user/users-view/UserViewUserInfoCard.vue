@@ -13,7 +13,7 @@
         <div class="d-flex justify-content-start">
           <b-avatar
             :src="userData.avatar"
-            :text="avatarText(userData.fullName)"
+            :text="avatarText(userData.fullname)"
             :variant="`light-${resolveUserRoleVariant(userData.role)}`"
             size="104px"
             rounded
@@ -21,65 +21,36 @@
           <div class="d-flex flex-column ml-1">
             <div class="mb-1">
               <h4 class="mb-0">
-                {{ userData.fullName }}
+                {{ userData.fullname }}
               </h4>
               <span class="card-text">{{ userData.email }}</span>
             </div>
             <div class="d-flex flex-wrap">
               <b-button
-                :to="{ name: 'apps-users-edit', params: { id: userData.id } }"
+                :to="{ name: 'user-edit', params: { id: userData.id } }"
                 variant="primary"
               >
-                Edit
+                Editar
               </b-button>
-              <b-button
+              <b-button v-if="userData.deleted_at==null"
                 variant="outline-danger"
                 class="ml-1"
+                @click="eliminar(userData.id)"
               >
-                Delete
+                Eliminar
+              </b-button>
+              <b-button v-else
+                variant="outline-success"
+                class="ml-1"
+                @click="habilitar(userData.id)"
+              >
+                Habilitar
               </b-button>
             </div>
           </div>
         </div>
 
-        <!-- User Stats -->
-        <div class="d-flex align-items-center mt-2">
-          <div class="d-flex align-items-center mr-2">
-            <b-avatar
-              variant="light-primary"
-              rounded
-            >
-              <feather-icon
-                icon="DollarSignIcon"
-                size="18"
-              />
-            </b-avatar>
-            <div class="ml-1">
-              <h5 class="mb-0">
-                23.3k
-              </h5>
-              <small>Monthly Sales</small>
-            </div>
-          </div>
 
-          <div class="d-flex align-items-center">
-            <b-avatar
-              variant="light-success"
-              rounded
-            >
-              <feather-icon
-                icon="TrendingUpIcon"
-                size="18"
-              />
-            </b-avatar>
-            <div class="ml-1">
-              <h5 class="mb-0">
-                $99.87k
-              </h5>
-              <small>Annual Profit</small>
-            </div>
-          </div>
-        </div>
       </b-col>
 
       <!-- Right Col: Table -->
@@ -97,7 +68,7 @@
               <span class="font-weight-bold">Username</span>
             </th>
             <td class="pb-50">
-              {{ userData.username }}
+              {{ userData.email }}
             </td>
           </tr>
           <tr>
@@ -108,8 +79,11 @@
               />
               <span class="font-weight-bold">Status</span>
             </th>
-            <td class="pb-50 text-capitalize">
-              {{ userData.status }}
+            <td v-if="userData.deleted_at==null" class="pb-50 text-capitalize">
+              Activo
+            </td>
+            <td v-else class="pb-50 text-capitalize">
+              Eliminado
             </td>
           </tr>
           <tr>
@@ -124,30 +98,8 @@
               {{ userData.role }}
             </td>
           </tr>
-          <tr>
-            <th class="pb-50">
-              <feather-icon
-                icon="FlagIcon"
-                class="mr-75"
-              />
-              <span class="font-weight-bold">Country</span>
-            </th>
-            <td class="pb-50">
-              {{ userData.country }}
-            </td>
-          </tr>
-          <tr>
-            <th>
-              <feather-icon
-                icon="PhoneIcon"
-                class="mr-75"
-              />
-              <span class="font-weight-bold">Contact</span>
-            </th>
-            <td>
-              {{ userData.contact }}
-            </td>
-          </tr>
+
+            
         </table>
       </b-col>
     </b-row>
@@ -160,6 +112,9 @@ import {
 } from 'bootstrap-vue'
 import { avatarText } from '@core/utils/filter'
 import useUsersList from '../users-list/useUsersList'
+
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
 export default {
   components: {
@@ -178,6 +133,55 @@ export default {
       resolveUserRoleVariant,
     }
   },
+  methods:{
+    eliminar(id){
+        var config = {
+            headers: {
+                Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+            }
+        }
+        var url = 'http://127.0.0.1:8000/api/user/'+id;
+        axios.delete(url, config)
+          .then(response => { 
+          console.log(response)
+          Swal.fire({
+            title: "Deshabilitar usuario",
+            text: "Se a deshabilitado el usuario con exito",
+            icon: "success",
+            confirmButtonText: "Ok",
+          });
+        }).catch(error => {
+          Swal.fire({
+            icon: "Error",
+            title: "Error al deshabilitar usuario",
+            text: error.response.data.message,
+          });
+        })
+    },
+    habilitar(id){
+      var config = {
+            headers: {
+                Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+            }
+        }
+        var url = 'http://127.0.0.1:8000/api/user/restore/'+id;
+        axios.post(url,"" ,config)
+          .then(response => { 
+          Swal.fire({
+            title: "Habilitar usuario",
+            text: "Se a restaurado al usuario",
+            icon: "success",
+            confirmButtonText: "Ok",
+          });
+        }).catch(error => {
+          Swal.fire({
+            icon: "Error",
+            title: "Error al restaurar usuario",
+            text: error.response.data.message,
+          });
+        })
+    }
+  }
 }
 </script>
 

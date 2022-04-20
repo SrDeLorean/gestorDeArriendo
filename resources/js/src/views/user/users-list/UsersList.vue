@@ -121,6 +121,25 @@
           </b-badge>
         </template>
 
+        <!-- Column: Status -->
+        <template #cell(deleted_at)="data">
+          <b-badge v-if="data.item.deleted_at==null"
+            pill
+            :variant="'light-success'"
+            class="text-capitalize"
+          >
+            Habilitado
+          </b-badge>
+
+          <b-badge v-else
+            pill
+            :variant="'light-danger'"
+            class="text-capitalize"
+          >
+            Deshabilitado
+          </b-badge>
+        </template>
+
         <!-- Column: Actions -->
         <template #cell(actions)="data">
           <b-dropdown
@@ -148,7 +167,7 @@
 
             <b-dropdown-item>
               <feather-icon icon="TrashIcon" />
-              <span class="align-middle ml-50">Delete</span>
+              <span @click="eliminar(data.item.id)" class="align-middle ml-50">Delete</span>
             </b-dropdown-item>
           </b-dropdown>
         </template>
@@ -227,7 +246,9 @@ import UsersListFilters from './UsersListFilters.vue'
 import useUsersList from './useUsersList'
 import userStoreModule from '../userStoreModule'
 import UserListAddNew from './UserListAddNew.vue'
+
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 export default {
   components: {
@@ -345,6 +366,33 @@ export default {
 
     }
   },
+  methods:{
+    eliminar(id){
+      var config = {
+            headers: {
+                Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+            }
+        }
+        var url = 'http://127.0.0.1:8000/api/user/'+id;
+        axios.delete(url, config)
+          .then(response => { 
+          console.log(response)
+          Swal.fire({
+            title: "Deshabilitar usuario",
+            text: "Se a deshabilitado el usuario con exito",
+            icon: "success",
+            confirmButtonText: "Ok",
+          });
+          this.refetchData();
+        }).catch(error => {
+          Swal.fire({
+            icon: "Error",
+            title: "Error al deshabilitar usuario",
+            text: error.response.data.message,
+          });
+        })
+    }
+  }
 }
 </script>
 

@@ -17,6 +17,7 @@ export default function useUsersList() {
         { key: 'fullname', sortable: true },
         { key: 'email', sortable: true },
         { key: 'role', sortable: true },
+        { key: 'deleted_at', sortable: true },
         { key: 'actions', sortable: false },
     ]
     const perPage = ref(10)

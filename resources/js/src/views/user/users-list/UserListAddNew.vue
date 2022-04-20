@@ -144,7 +144,7 @@ import formValidation from '@core/comp-functions/forms/form-validation'
 import Ripple from 'vue-ripple-directive'
 import vSelect from 'vue-select'
 import countries from '@/@fake-db/data/other/countries'
-import store from '@/store'
+
 import axios from 'axios'
 import Swal from 'sweetalert2'
 
@@ -205,15 +205,20 @@ export default {
     }
 
     const onSubmit = () => {
-      console.log(userData.value)
+      var config = {
+            headers: {
+                Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+            }
+        }
       var url = 'http://127.0.0.1:8000/api/user';
         axios.post(url, {
           "fullname": userData.value.fullname,
           "email": userData.value.email,
           "password": userData.value.password,
           "role": userData.value.role,
-        })
+        }, config)
           .then(response => { 
+            console.log(response)
             Swal.fire({
               title: "Registrar Usuario",
               text: "Se ha registrado el usuario con exito",

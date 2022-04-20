@@ -7,14 +7,14 @@
         <b-avatar
           ref="previewEl"
           :src="userData.avatar"
-          :text="avatarText(userData.fullName)"
+          :text="avatarText(userData.fullname)"
           :variant="`light-${resolveUserRoleVariant(userData.role)}`"
           size="90px"
           rounded
         />
       </template>
       <h4 class="mb-1">
-        {{ userData.fullName }}
+        {{ userData.fullname }}
       </h4>
       <div class="d-flex flex-wrap">
         <b-button
@@ -56,28 +56,12 @@
           md="4"
         >
           <b-form-group
-            label="Username"
-            label-for="username"
+            label="Nombre completo"
+            label-for="fullname"
           >
             <b-form-input
-              id="username"
-              v-model="userData.username"
-            />
-          </b-form-group>
-        </b-col>
-
-        <!-- Field: Full Name -->
-        <b-col
-          cols="12"
-          md="4"
-        >
-          <b-form-group
-            label="Name"
-            label-for="full-name"
-          >
-            <b-form-input
-              id="full-name"
-              v-model="userData.fullName"
+              id="fullname"
+              v-model="userData.fullname"
             />
           </b-form-group>
         </b-col>
@@ -91,30 +75,35 @@
             label="Email"
             label-for="email"
           >
-            <b-form-input
+            <b-form-input v-if='usuario.role=="client"'
               id="email"
               v-model="userData.email"
               type="email"
+              disabled
+            />
+
+            <b-form-input v-else
+              id="email"
+              v-model="userData.email"
+              type="email"
+              
             />
           </b-form-group>
         </b-col>
 
-        <!-- Field: Status -->
+        <!-- Field: Username -->
         <b-col
           cols="12"
           md="4"
         >
           <b-form-group
-            label="Status"
-            label-for="user-status"
+            label="Constraseña"
+            label-for="password"
           >
-            <v-select
-              v-model="userData.status"
-              :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
-              :options="statusOptions"
-              :reduce="val => val.value"
-              :clearable="false"
-              input-id="user-status"
+            <b-form-input
+              id="password"
+              type=password
+              v-model="userData.password"
             />
           </b-form-group>
         </b-col>
@@ -139,23 +128,22 @@
           </b-form-group>
         </b-col>
 
-        <!-- Field: Email -->
-        <b-col
-          cols="12"
-          md="4"
-        >
-          <b-form-group
-            label="Company"
-            label-for="company"
-          >
-            <b-form-input
-              id="company"
-              v-model="userData.company"
-            />
-          </b-form-group>
-        </b-col>
-
       </b-row>
+
+        <!-- Action Buttons -->
+      <b-button
+        variant="primary"
+        class="mb-1 mb-sm-0 mr-0 mr-sm-1"
+        @click="guardar"
+      >
+        Guardar cambios
+      </b-button>
+      <b-button
+        variant="outline-secondary"
+        type="reset"
+      >
+        Limpiar
+      </b-button>
     </b-form>
 
   </div>
@@ -182,6 +170,9 @@ import vSelect from 'vue-select'
 import { useInputImageRenderer } from '@core/comp-functions/forms/form-utils'
 import { ref } from '@vue/composition-api'
 import useUsersList from '../users-list/useUsersList'
+
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
 export default {
   components: {
@@ -210,11 +201,9 @@ export default {
     const { resolveUserRoleVariant } = useUsersList()
 
     const roleOptions = [
-      { label: 'Admin', value: 'admin' },
-      { label: 'Author', value: 'author' },
-      { label: 'Editor', value: 'editor' },
-      { label: 'Maintainer', value: 'maintainer' },
-      { label: 'Subscriber', value: 'subscriber' },
+      { label: 'Desarrollador', value: 'desarrollador' },
+      { label: 'Administrador', value: 'admin' },
+      { label: 'Cliente', value: 'client' }, 
     ]
 
     const statusOptions = [
@@ -281,6 +270,47 @@ export default {
       refInputEl,
       previewEl,
       inputImageRenderer,
+      usuario: {
+        role: "client"
+      }
+    }
+  },
+  created() {
+
+      this.usuario = JSON.parse(localStorage.getItem('userData'));
+    
+  },
+  methods:{
+    guardar(){
+      console.log(this.userData)
+      var config = {
+        headers: {
+            Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('accessToken'))
+        }
+      }
+      var url = 'http://127.0.0.1:8000/api/user/'+this.userData.id;
+        axios.put(url, {
+          "fullname": this.userData.fullname,
+          "email": this.userData.email,
+          "password": this.userData.password,
+          "role": this.userData.role,
+        }, config)
+          .then(response => { 
+            console.log(response)
+            Swal.fire({
+              title: "Modificar usuario",
+              text: "Los cambios se han realizado con exito",
+              icon: "success",
+              confirmButtonText: "Ok",
+            });
+          }).catch(error => {
+            Swal.fire({
+              icon: "Error",
+              title: "Error al registra usuario",
+              text: error.response.data.message,
+            });
+      })
+    
     }
   },
 }
